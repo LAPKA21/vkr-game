@@ -1,0 +1,84 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #0d1b0d 0%, #0a2a14 100%);
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.back {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0f0f0;
+  padding: 0.5rem 1rem;
+}
+
+.title {
+  font-family: Georgia, serif;
+  font-size: 1.75rem;
+  color: #f0f0f0;
+}
+
+.create {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.create input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.create button {
+  background: var(--accent-gold);
+  color: #0d1b0d;
+  font-weight: 600;
+}
+
+.list h2 {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.list ul {
+  list-style: none;
+}
+
+.roomRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.roomName {
+  flex: 1;
+  font-weight: 500;
+}
+
+.roomCount {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.roomRow button {
+  background: var(--accent-green);
+  color: #fff;
+}
+
+.empty {
+  color: var(--text-muted);
+  padding: 2rem;
+  text-align: center;
+}
