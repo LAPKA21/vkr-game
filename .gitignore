@@ -1,0 +1,39 @@
+# Зависимости
+node_modules
+client/node_modules
+server/node_modules
+
+# Сборки
+client/dist
+server/dist
+client/build
+server/build
+
+# Инвайрменты и пароли (ОБЯЗАТЕЛЬНО ИГНОРИРОВАТЬ)
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+
+# Локальная база данных (если будет создана через docker или sqlite)
+pgdata/
+data/
+*.sqlite
+*.db
+
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+server/logs/
+
+# Настройки редакторов
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store

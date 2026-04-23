@@ -65,7 +65,11 @@ export class MarkovBot {
     // 3. Получаем последнее действие оппонента
     const opponentLastAction: PlayerActionType | 'NONE' = (opponent?.lastAction ?? 'NONE') as PlayerActionType | 'NONE';
 
-    // 4. Формируем состояние Марковской цепи
+    // 4. Записываем действие оппонента для сбора статистики и стиля
+    this.markov.recordOpponentAction(opponentLastAction);
+    const opponentStyle = this.markov.getOpponentStyle();
+
+    // 5. Формируем состояние Марковской цепи
     const markovState: MarkovState = {
       phase,
       handStrength,
@@ -81,6 +85,7 @@ export class MarkovBot {
     // Логирование решения
     console.log('Bot decision:', {
       state: markovState,
+      opponentStyle,
       action: botAction,
       decision,
       botChips: bot.chips,
@@ -167,4 +172,12 @@ export class MarkovBot {
   getDifficulty(): BotDifficulty {
     return this.difficulty;
   }
+
+  /**
+   * Получает распознанный стиль оппонента
+   */
+  getOpponentStyle(): string {
+    return this.markov.getOpponentStyle();
+  }
 }
+

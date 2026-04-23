@@ -3,7 +3,7 @@
 import { io } from 'socket.io-client';
 import type { RoomState, RoomListItem } from '../types';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? '/';
 
 export const socket = io(SOCKET_URL, { autoConnect: true });
 
@@ -20,8 +20,12 @@ export function on<K extends keyof SocketEventMap>(event: K, cb: SocketEventMap[
   (socket.on as any)(event, cb);
 }
 
-export function off<K extends keyof SocketEventMap>(event: K) {
-  socket.off(event);
+export function off<K extends keyof SocketEventMap>(event: K, cb?: SocketEventMap[K]) {
+  if (cb) {
+    (socket.off as any)(event, cb);
+  } else {
+    socket.off(event);
+  }
 }
 
 export function emit(event: string, ...args: unknown[]) {
@@ -36,12 +40,16 @@ export function createRoom(name: string) {
   emit('room:create', name);
 }
 
-export function createTrainingRoom(name: string) {
-  emit('room:createTraining', name);
+export function createTrainingRoom(name: string, difficulty?: string) {
+  emit('room:createTraining', { name, difficulty });
 }
 
-export function joinRoom(roomId: string, playerName: string) {
-  emit('room:join', { roomId, playerName });
+export function joinRoom(roomId: string, playerName: string, token?: string) {
+  emit('room:join', { roomId, playerName, token });
+}
+
+export function leaveRoom() {
+  emit('room:leave');
 }
 
 export function startGame(roomId: string) {
@@ -54,4 +62,8 @@ export function gameAction(roomId: string, action: string, amount?: number) {
 
 export function restartRound(roomId: string) {
   emit('game:restart', roomId);
+}
+
+export function addGameChips(roomId: string, targetPlayerId: string, amount: number = 1000) {
+  emit('game:addChips', { roomId, targetPlayerId, amount });
 }

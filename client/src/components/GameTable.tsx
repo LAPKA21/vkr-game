@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { addGameChips } from '../services/socket';
 import Card from './Card';
 import { getStateLabel } from '../state/gameStateMachine';
 import type { RoomState } from '../types';
@@ -82,19 +83,17 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
     const isDealer = ctx.dealerIndex === players.indexOf(p);
     const isCurrent = ctx.currentPlayerIndex === players.indexOf(p);
 
-    // Hardcoded seats for up to 6 players, avoiding the center community cards.
-    // Hardcoded seats for up to 6 players on a larger table
     const SEAT_POSITIONS: React.CSSProperties[] = [
-      { bottom: '130px', left: '35%', transform: 'translateX(-50%)' },
-       { bottom: '130px', left: '65%', transform: 'translateX(-50%)' },  // 5: User Bottom Right-ish (same horizontal row as seat 0) // 0: User Bottom Left-ish
-      { bottom: '250px', left: '30px' },                               // 1: Left Bottom
-      { top: '80px', left: '150px' },                                  // 2: Top Left
-      { top: '80px', right: '150px' },                                 // 3: Top Right
-      { bottom: '250px', right: '30px' }                              // 4: Right Bottom
-     
+      { bottom: '110px', left: '35%', transform: 'translateX(-50%)' }, // 0: User Bottom Left-ish
+      { bottom: '110px', left: '65%', transform: 'translateX(-50%)' }, // 1: User Bottom Right-ish
+      { top: '50%', left: '2%', transform: 'translateY(-50%)' },     // 2: Left Middle
+      { top: '90px', left: '25%' },                                   // 3: Top Left
+      { top: '90px', right: '25%' },                                  // 4: Top Right
+      { top: '50%', right: '2%', transform: 'translateY(-50%)' }     // 5: Right Middle
     ];
 
     const pos = SEAT_POSITIONS[index] || SEAT_POSITIONS[0]; // fallback to safe position
+
 
     return (
       <div
@@ -110,6 +109,12 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
             {p.name}
             {p.isBot && ' (бот)'}
             {isDealer && ' [D]'}
+            {p.isBot && (
+              <BotThoughtPopup 
+                botLogs={room.botLogs}
+                alignRight={index === 0 || index === 2 || index === 3}
+              />
+            )}
           </span>
 
           <span className={styles.chips}>{p.chips} фишек</span>
@@ -120,6 +125,16 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
 
           {p.lastAction && (
             <span className={styles.lastAction}>{p.lastAction}</span>
+          )}
+
+          {p.chips === 0 && (
+            <button 
+              className={styles.reloadChipsBtn} 
+              onClick={() => addGameChips(room.roomId, p.id, 1000)}
+              title="Добавить фишки"
+            >
+              + Фишки
+            </button>
           )}
         </div>
 
@@ -214,4 +229,31 @@ function TurnTimer({ endsAt }: { endsAt: number }) {
     return () => clearInterval(t);
   }, [endsAt]);
   return <span className={styles.timer}>Ход: {left}с</span>;
+}
+
+function BotThoughtPopup({ botLogs, alignRight }: { botLogs?: string[], alignRight?: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={styles.botThoughtWrapper} onClick={(e) => e.stopPropagation()}>
+      <button className={styles.botThoughtBtn} onClick={(e) => { e.preventDefault(); setOpen(!open); }} title="История действий бота">?</button>
+      {open && (
+        <div className={`${styles.botThoughtModal} ${alignRight ? styles.alignRight : ''}`}>
+          <div className={styles.botThoughtHeader}>
+            <strong>Логи действий бота</strong>
+            <button className={styles.botThoughtClose} onClick={() => setOpen(false)}>×</button>
+          </div>
+          <div className={styles.botLogsList}>
+            {botLogs && botLogs.length > 0 ? (
+              // Reversing to show newest at top, or just show as is with scroll
+              botLogs.slice().reverse().map((log, i) => (
+                <div key={i} className={styles.botLogItem}>{log}</div>
+              ))
+            ) : (
+              <div className={styles.botLogItem}>Бот еще не делал ходов в этой сессии.</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

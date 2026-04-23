@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { joinRoom, on, off, startGame, gameAction, restartRound } from '../services/socket';
+import { joinRoom, leaveRoom, on, off, startGame, gameAction, restartRound } from '../services/socket';
 import { socket } from '../services/socket';
 import GameTable from '../components/GameTable';
 import type { RoomState } from '../types';
@@ -29,6 +29,7 @@ export default function TrainingRoom() {
     return () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
+      leaveRoom(); // Очищаем сервер от этой комнаты
     };
   }, []);
 

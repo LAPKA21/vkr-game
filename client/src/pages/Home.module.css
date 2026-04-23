@@ -80,3 +80,28 @@
   background: rgba(45, 138, 78, 0.4);
   border-color: rgba(201, 162, 39, 0.6);
 }
+
+.trainingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(201, 162, 39, 0.2);
+  padding-top: 1rem;
+}
+
+.select {
+  background: rgba(13, 27, 13, 0.8);
+  color: #e0e0e0;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.select:hover, .select:focus {
+  border-color: rgba(201, 162, 39, 0.8);
+}

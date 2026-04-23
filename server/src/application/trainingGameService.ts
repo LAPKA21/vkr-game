@@ -10,6 +10,19 @@
 import type { Room, Player, GameContext } from '../types/index.js';
 import { MarkovBot } from '../domain/bot/markovBot.js';
 import { BotDifficulty } from '../domain/bot/markovModel.js';
+import { evaluateHandStrength } from '../domain/bot/handStrengthEvaluator.js';
+import { evaluateHand, getHandRankNameRu } from '../game/pokerLogic.js';
+
+const STAGE_RU = {
+  WHAT: '', // Fallback
+  WAITING_FOR_PLAYERS: 'Ожидание',
+  PRE_FLOP: 'Пре-флоп',
+  FLOP: 'Флоп',
+  TURN: 'Терн',
+  RIVER: 'Ривер',
+  SHOWDOWN: 'Вскрытие',
+  ROUND_END: 'Конец раунда',
+};
 
 /**
  * Генерирует случайную задержку перед действием бота (симуляция размышления)
@@ -87,6 +100,8 @@ export class TrainingGameService {
       const ok = applyAction(room, botPlayer.id, decision.action, decision.amount, emit);
 
       // Если по каким‑то причинам действие оказалось невалидным — делаем безопасный fallback
+      let finalAction = decision.action;
+      let finalAmount = decision.amount;
       if (!ok) {
         const toCall = Math.max(0, currentCtx.currentBet - room.players[currentBotIndex].currentBet);
         const canCheck = toCall === 0;
@@ -98,8 +113,42 @@ export class TrainingGameService {
           fallback: fallbackAction,
         });
 
+        finalAction = fallbackAction;
+        finalAmount = undefined;
         applyAction(room, botPlayer.id, fallbackAction, undefined, emit);
       }
+      
+      // Записываем лог действия бота
+      if (!room.botLogs) room.botLogs = [];
+      const stageRu = STAGE_RU[currentCtx.state] || currentCtx.state;
+      let strengthStr = 'Неизвестно';
+      let handRu = 'Скрыто';
+      
+      const currentBotPlayer = room.players[currentBotIndex];
+      if (currentBotPlayer.cards.length >= 2) {
+         const strVal = evaluateHandStrength(currentBotPlayer.cards, currentCtx.communityCards, currentCtx.state);
+         strengthStr = strVal === 'STRONG' ? 'СИЛЬНАЯ' : strVal === 'MEDIUM' ? 'СРЕДНЯЯ' : 'СЛАБАЯ';
+         const rank = evaluateHand(currentBotPlayer.cards, currentCtx.communityCards);
+         handRu = getHandRankNameRu(rank.type);
+      }
+      
+      const actionRuMap: Record<string, string> = {
+        fold: 'Сброс',
+        check: 'Чек',
+        call: 'Колл',
+        raise: finalAmount ? `Рейз (${finalAmount})` : 'Рейз',
+        allin: 'Ва-банк'
+      };
+      
+      const actionRu = actionRuMap[finalAction] || finalAction;
+      const currentStyle = bot.getOpponentStyle();
+      const styleDesc = currentStyle === 'AGGRESSIVE' ? 'Агрессор' : currentStyle === 'TIGHT' ? 'Осторожный' : 'Нормальный';
+      
+      const logEntry = `[${new Date().toLocaleTimeString('ru-RU')}] Этап: ${stageRu}. Сила руки: ${handRu} (${strengthStr}). Стиль оппонента: ${styleDesc}. Действие: ${actionRu}`;
+      
+      room.botLogs.push(logEntry);
+      if (room.botLogs.length > 50) room.botLogs.shift();
+      
     }, getBotThinkingDelay());
   }
 

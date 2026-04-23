@@ -12,6 +12,7 @@ import {
 import { getWinnerIndices, compareHandRanks, type HandRankType } from '../game/pokerLogic.js';
 import { trainingGameService } from '../application/trainingGameService.js';
 import { evaluateHandStrength } from '../domain/bot/handStrengthEvaluator.js';
+import { prisma } from '../db.js';
 
 const SMALL_BLIND = 10;
 const BIG_BLIND = 20;
@@ -37,17 +38,18 @@ function createEmptyContext(): GameContext {
   };
 }
 
-function createPlayer(id: string, name: string, isBot = false): Player {
+function createPlayer(id: string, name: string, isBot = false, initialChips = 1000, dbUserId?: string): Player {
   return {
     id,
     name,
-    chips: INITIAL_CHIPS,
+    chips: initialChips,
     currentBet: 0,
     cards: [],
     folded: false,
     allIn: false,
     isBot: isBot || undefined,
     connected: !isBot,
+    dbUserId
   };
 }
 
@@ -94,16 +96,17 @@ export function listRooms(): Room[] {
   return [...rooms.values()].filter((r) => !r.isTraining && r.players.length < r.maxPlayers);
 }
 
-export function joinRoom(roomId: string, playerId: string, playerName: string): { room: Room; player: Player } | null {
+export function joinRoom(roomId: string, playerId: string, playerName: string, initialChips = 1000, dbUserId?: string): { room: Room; player: Player } | null {
   const room = rooms.get(roomId);
   if (!room || room.players.length >= room.maxPlayers) return null;
   const existing = room.players.find((p) => p.id === playerId);
   if (existing) {
     existing.connected = true;
     existing.name = playerName;
+    // We do NOT reset their chips if they are reconnecting
     return { room, player: existing };
   }
-  const player = createPlayer(playerId, playerName);
+  const player = createPlayer(playerId, playerName, false, initialChips, dbUserId);
   room.players.push(player);
   playerToRoom.set(playerId, roomId);
   return { room, player };
@@ -117,19 +120,78 @@ export function leaveRoom(playerId: string): Room | null {
   const player = room.players.find((p) => p.id === playerId);
   if (player) {
     player.connected = false;
+    
+    // Синхронизируем фишки обратно в БД при выходе, чтобы они не пропали
+    if (player.dbUserId && player.chips >= 0) {
+      prisma.user.update({
+        where: { id: player.dbUserId },
+        data: { chips: { increment: player.chips } }
+      }).catch(err => console.error('Error saving chips on leave:', err));
+      player.chips = 0; // Предотвращаем повторное сохранение
+    }
+
     if (room.gameContext.state === 'WAITING_FOR_PLAYERS') {
       room.players = room.players.filter((p) => p.id !== playerId);
       playerToRoom.delete(playerId);
-      if (room.players.length === 0) {
-        rooms.delete(roomId);
-        // Удаляем бота при удалении комнаты
-        if (room.isTraining) {
-          trainingGameService.removeBot(roomId);
-        }
+    } else {
+      // Если игра идет, игрок остается за столом, но помечается как отключенный (авто-фолд)
+      if (!player.folded && !player.allIn) {
+        // Мы не фолдим его тут принудительно, это сделает движок и таймер.
       }
+    }
+
+    // Если в комнате не осталось ни одного подключенного живого человека
+    const hasConnectedHumans = room.players.some((p) => !p.isBot && p.connected);
+    if (!hasConnectedHumans) {
+      rooms.delete(roomId);
+      if (room.isTraining) {
+        trainingGameService.removeBot(roomId);
+      }
+      clearTurnTimeout(roomId);
     }
   }
   return room;
+}
+
+/**
+ * Периодическое сохранение всех фишек игроков в БД для защиты от падений сервера
+ */
+function syncRoomDbChips(room: Room) {
+  if (room.isTraining) return; // В тренировке фишки виртуальные
+  
+  for (const p of room.players) {
+    if (p.dbUserId && p.chips >= 0) {
+      // Это действие ОБНОВЛЯЕТ фишки в БД до текущего значения на столе 
+      // (но мы обнулили их при входе, поэтому мы просто возвращаем их обратно? 
+      // Нет! При входе мы делали chips: 0. Если мы будем постоянно делать increment, фишки будут удваиваться!
+      // Поэтому при периодическом сохранении мы просто перезаписываем значение в БД!)
+      prisma.user.update({
+        where: { id: p.dbUserId },
+        data: { chips: p.chips }
+      }).catch(err => console.error('Error syncing chips:', err));
+    }
+  }
+}
+
+/**
+ * Обновление рейтинга игроков в конце раунда в онлайн-сражениях
+ */
+function updateRatings(room: Room, winners: number[]) {
+  if (room.isTraining) return; // В тренировке рейтинг не меняется
+  
+  for (let i = 0; i < room.players.length; i++) {
+    const p = room.players[i];
+    // Обновляем рейтинг только реальным игрокам, которые вложили фишки в банк
+    if (p.dbUserId && (p.invested || 0) > 0) {
+      const isWinner = winners.includes(i);
+      const ratingChange = isWinner ? 25 : -10;
+      
+      prisma.user.update({
+        where: { id: p.dbUserId },
+        data: { rating: { increment: ratingChange } }
+      }).catch(err => console.error('Error updating rating:', err));
+    }
+  }
 }
 
 export function startGame(roomId: string): boolean {
@@ -288,6 +350,9 @@ export function applyPlayerAction(
     winner.chips += ctx.pot;
     ctx.state = 'ROUND_END';
 
+    updateRatings(room, [winnerIndex]);
+    syncRoomDbChips(room); // Сохраняем в БД
+
     emit('game:state', serializeRoom(room));
     scheduleNextRound(room, emit);
     return true;
@@ -311,6 +376,9 @@ export function applyPlayerAction(
         if (ctx.state === 'SHOWDOWN') {
           const winners = doShowdown(room);
           ctx.state = 'ROUND_END';
+
+          updateRatings(room, winners);
+          syncRoomDbChips(room); // Сохраняем в БД
 
           // Описания выигрышных рук для отображения на клиенте
           const winnerHands: { playerIndex: number; handType: HandRankType; handNameRu: string }[] =
@@ -353,13 +421,15 @@ export function applyPlayerAction(
   return true;
 }
 
-function scheduleTurnTimeout(room: Room, emit: (event: string, data: unknown) => void): void {
+export function scheduleTurnTimeout(room: Room, emit: (event: string, data: unknown) => void): void {
   clearTurnTimeout(room.id);
   const t = setTimeout(() => {
     const ctx = room.gameContext;
     const p = room.players[ctx.currentPlayerIndex];
     if (p && !p.isBot && !p.folded && !p.allIn) {
-      applyPlayerAction(room, p.id, 'check', undefined, emit);
+      const toCall = ctx.currentBet - p.currentBet;
+      const defaultAction = toCall === 0 ? 'check' : 'fold';
+      applyPlayerAction(room, p.id, defaultAction, undefined, emit);
     }
     turnTimeouts.delete(room.id);
   }, TURN_TIMEOUT_MS);
@@ -376,6 +446,12 @@ function scheduleNextRound(room: Room, emit: (event: string, data: unknown) => v
     if (humanCount >= 1 && withChips >= 2) {
       startGame(room.id);
       emit('game:state', serializeRoom(room));
+      const current = room.players[room.gameContext.currentPlayerIndex];
+      if (current?.isBot) {
+        runBotTurn(room, emit);
+      } else {
+        scheduleTurnTimeout(room, emit);
+      }
     } else {
       room.gameContext.state = 'WAITING_FOR_PLAYERS';
       room.gameContext.communityCards = [];
@@ -500,6 +576,7 @@ export function serializeRoom(room: Room): Record<string, unknown> {
       minRaise: room.gameContext.minRaise,
       turnEndsAt: room.gameContext.turnEndsAt,
     },
+    botLogs: room.botLogs,
   };
 }
 
@@ -517,5 +594,15 @@ export function restartRound(roomId: string, emit: (event: string, data: unknown
   if (!room) return false;
   const ctx = room.gameContext;
   if (ctx.state !== 'WAITING_FOR_PLAYERS' && ctx.state !== 'ROUND_END') return false;
-  return startGame(roomId);
+  const started = startGame(roomId);
+  if (started) {
+    emit('game:state', serializeRoom(room));
+    const current = room.players[ctx.currentPlayerIndex];
+    if (current?.isBot) {
+      runBotTurn(room, emit);
+    } else {
+      scheduleTurnTimeout(room, emit);
+    }
+  }
+  return started;
 }

@@ -59,6 +59,7 @@ export interface RoomState {
   gameContext: GameContext;
   winners?: number[];
   winnerHands?: WinnerHandInfo[];
+  botLogs?: string[];
 }
 
 export interface RoomListItem {

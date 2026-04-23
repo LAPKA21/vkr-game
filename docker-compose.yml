@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: poker_db
+    restart: always
+    environment:
+      POSTGRES_USER: poker
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-poker_password}
+      POSTGRES_DB: poker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: poker_server
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://poker:${DB_PASSWORD:-poker_password}@db:5432/poker?schema=public
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key}
+      - CLIENT_URL=http://${VPS_IP:-localhost}:80
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    # Ждем пока бд запустится, применяем схему и стартуем
+    command: /bin/sh -c "npx prisma db push && npm start"
+
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: poker_client
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:

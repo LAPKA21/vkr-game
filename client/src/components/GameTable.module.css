@@ -1,7 +1,10 @@
 .table {
   position: relative;
-  max-width: 1200px; /* Increased from 900px */
-  height: 850px;     /* Increased from 700px */
+  width: 100%;
+  max-width: 1200px;
+  height: calc(100vh - 10rem); /* Adapts to screen height, leaving space for headers/margins */
+  min-height: 550px;
+  max-height: 850px;
   margin: 0 auto;
   padding: 1.5rem;
 
@@ -107,6 +110,25 @@
   justify-content: center;
 }
 
+.reloadChipsBtn {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #10b981;
+  color: #a7f3d0;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+  pointer-events: auto;
+}
+
+.reloadChipsBtn:hover {
+  background: #10b981;
+  color: #fff;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -187,11 +209,12 @@
 
 .actions{
   position:absolute;
-  bottom:30px; /* Moved up slightly from 15px */
+  bottom: 20px;
   left:50%;
   transform:translateX(-50%);
 
   z-index: 10;
+  width: 100%;
 }
 
 .hintContainer {
@@ -237,4 +260,132 @@
 .hintToggleBtn:hover {
   background: rgba(255, 255, 255, 0.2);
   color: white;
+}
+
+.botThoughtWrapper {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.5rem;
+  pointer-events: auto;
+}
+
+.botThoughtBtn {
+  background: rgba(201, 162, 39, 0.2);
+  color: #c9a227;
+  border: 1px solid #c9a227;
+  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.botThoughtBtn:hover {
+  background: #c9a227;
+  color: #000;
+}
+
+.botThoughtModal {
+  position: absolute;
+  /* Выводим левее кнопки */
+  right: calc(100% + 15px);
+  /* Выводим вверх, чтобы не пересекаться с нижними кнопками действий */
+  bottom: -20px;
+  
+  background: rgba(10, 26, 14, 0.95);
+  border: 1px solid rgba(201, 162, 39, 0.6);
+  border-radius: 8px;
+  padding: 0.75rem;
+  width: 260px; /* Фиксированная ширина */
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  text-align: left;
+}
+
+.botThoughtModal.alignRight {
+  right: auto;
+  left: calc(100% + 15px);
+}
+
+.botThoughtHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.3);
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.botThoughtHeader strong {
+  color: #c9a227;
+  font-size: 0.9rem;
+}
+
+.botThoughtClose {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.botThoughtClose:hover {
+  opacity: 1;
+}
+
+.botThoughtModal p {
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  white-space: normal;
+}
+
+.botThoughtModal p strong {
+  color: #fff;
+}
+
+.botLogsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 200px; /* Фиксированная высота окна */
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.botLogsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.botLogsList::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.botLogsList::-webkit-scrollbar-thumb {
+  background: rgba(201, 162, 39, 0.4);
+  border-radius: 4px;
+}
+
+.botLogsList::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 162, 39, 0.6);
+}
+
+.botLogItem {
+  font-size: 0.75rem;
+  color: #e0e0e0;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 6px;
+  border-left: 2px solid #c9a227;
+  line-height: 1.3;
 }

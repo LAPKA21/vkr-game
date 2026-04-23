@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listRooms, createRoom, on, off } from '../services/socket';
+import { useAuth } from '../state/AuthContext';
 import type { RoomListItem } from '../types';
 import styles from './ServerBrowser.module.css';
 
 export default function ServerBrowser() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [rooms, setRooms] = useState<RoomListItem[]>([]);
   const [creating, setCreating] = useState(false);
   const [createName, setCreateName] = useState('');
@@ -21,8 +23,8 @@ export default function ServerBrowser() {
     on('rooms:list', handleList);
     on('room:created', handleCreated);
     return () => {
-      off('rooms:list');
-      off('room:created');
+      off('rooms:list', handleList);
+      off('room:created', handleCreated);
     };
   }, [navigate]);
 
@@ -33,7 +35,7 @@ export default function ServerBrowser() {
   };
 
   const handleJoin = (roomId: string) => {
-    const name = prompt('Введите ваше имя:', 'Игрок') || 'Игрок';
+    const name = user?.username || 'Игрок';
     navigate(`/room/${roomId}`, { state: { playerName: name } });
   };
 

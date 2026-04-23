@@ -27,6 +27,8 @@ import type { HandStrength } from './handStrengthEvaluator.js';
  */
 export type BotAction = 'FOLD' | 'CHECK' | 'CALL' | 'RAISE' | 'ALL_IN';
 
+export type OpponentStyle = 'NORMAL' | 'TIGHT' | 'AGGRESSIVE';
+
 /**
  * Состояние Марковской цепи
  */
@@ -56,6 +58,7 @@ export enum BotDifficulty {
 export class MarkovModel {
   private transitionMatrix: TransitionMatrix;
   private difficulty: BotDifficulty;
+  private opponentActionHistory: PlayerActionType[] = [];
 
   constructor(difficulty: BotDifficulty = BotDifficulty.NORMAL) {
     this.difficulty = difficulty;
@@ -139,23 +142,74 @@ export class MarkovModel {
       return this.selectActionByProbability(defaultProbs);
     }
 
-    // Адаптация вероятностей в зависимости от действия оппонента
-    const adaptedProbs = this.adaptProbabilities(probabilities, state.opponentLastAction, state.handStrength);
+    const style = this.getOpponentStyle();
+    
+    // Адаптация вероятностей в зависимости от действия и стиля оппонента
+    const adaptedProbs = this.adaptProbabilities(probabilities, state.opponentLastAction, state.handStrength, style);
 
     return this.selectActionByProbability(adaptedProbs);
   }
 
   /**
-   * Адаптирует вероятности в зависимости от действия оппонента
+   * Записывает действие оппонента для сбора статистики
+   */
+  recordOpponentAction(action: PlayerActionType | 'NONE'): void {
+    if (action !== 'NONE') {
+      this.opponentActionHistory.push(action);
+      if (this.opponentActionHistory.length > 15) {
+        this.opponentActionHistory.shift();
+      }
+    }
+  }
+
+  /**
+   * Вычисляет стиль оппонента на основе истории действий
+   */
+  getOpponentStyle(): OpponentStyle {
+    if (this.opponentActionHistory.length < 5) return 'NORMAL';
+    
+    const aggrCount = this.opponentActionHistory.filter(a => a === 'raise' || a === 'allin').length;
+    const passiveCount = this.opponentActionHistory.filter(a => a === 'fold' || a === 'check').length;
+
+    const aggrRatio = aggrCount / this.opponentActionHistory.length;
+    const passiveRatio = passiveCount / this.opponentActionHistory.length;
+
+    if (aggrRatio > 0.4) return 'AGGRESSIVE';
+    if (passiveRatio > 0.5) return 'TIGHT';
+    return 'NORMAL';
+  }
+
+  /**
+   * Адаптирует вероятности в зависимости от стиля и действия оппонента
    */
   private adaptProbabilities(
     baseProbs: Record<BotAction, number>,
     opponentAction: PlayerActionType | 'NONE',
-    handStrength: HandStrength
+    handStrength: HandStrength,
+    opponentStyle: OpponentStyle
   ): Record<BotAction, number> {
     const adapted = { ...baseProbs };
 
-    // Если оппонент сделал агрессивное действие (raise/allin)
+    // 1. Адаптация под долговременный стиль оппонента
+    if (opponentStyle === 'TIGHT') {
+      if (handStrength === 'WEAK' || handStrength === 'MEDIUM') {
+        // Чаще блефуем против осторожных
+        adapted.RAISE *= 1.5;
+        adapted.CALL *= 1.2;
+      }
+    } else if (opponentStyle === 'AGGRESSIVE') {
+      if (handStrength === 'WEAK') {
+        // Меньше блефуем против маньяков
+        adapted.RAISE *= 0.5;
+        adapted.FOLD *= 1.5;
+      } else if (handStrength === 'STRONG') {
+        // Ловим в ловушку
+        adapted.CALL *= 1.5;
+        adapted.RAISE *= 1.2;
+      }
+    }
+
+    // 2. Кратковременная адаптация к последнему ходу
     if (opponentAction === 'raise' || opponentAction === 'allin') {
       // Увеличиваем вероятность фолда при слабой руке
       if (handStrength === 'WEAK') {

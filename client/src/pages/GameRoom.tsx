@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { joinRoom, on, off, startGame, gameAction, restartRound } from '../services/socket';
+import { joinRoom, leaveRoom, on, off, startGame, gameAction, restartRound } from '../services/socket';
 import { socket } from '../services/socket';
+import { useAuth } from '../state/AuthContext';
 import GameTable from '../components/GameTable';
 import type { RoomState } from '../types';
 import styles from './GameRoom.module.css';
@@ -15,6 +16,7 @@ export default function GameRoom() {
   const [playerName, setPlayerName] = useState('');
   const [joinError, setJoinError] = useState('');
   const joined = useRef(false);
+  const { token } = useAuth();
 
   useEffect(() => {
     const handleConnect = () => setMyId(socket.id ?? null);
@@ -29,6 +31,7 @@ export default function GameRoom() {
     return () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
+      leaveRoom(); // Отправляем серверу явный сигнал о выходе со страницы
     };
   }, []);
 
@@ -39,7 +42,7 @@ export default function GameRoom() {
       setPlayerName(stateName);
       if (!joined.current) {
         joined.current = true;
-        joinRoom(roomId, stateName);
+        joinRoom(roomId, stateName, token ?? undefined);
       }
     }
   }, [roomId, location.state]);
@@ -68,7 +71,7 @@ export default function GameRoom() {
     if (!name || !roomId) return;
     setJoinError('');
     joined.current = true;
-    joinRoom(roomId, name);
+    joinRoom(roomId, name, token ?? undefined);
   };
 
   const inRoom = Boolean(myId && room && room.players.some((p) => p.id === myId));

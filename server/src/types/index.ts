@@ -23,6 +23,7 @@ export interface Player {
   currentHandStrength?: 'WEAK' | 'MEDIUM' | 'STRONG';
   currentHandNameRu?: string;
   invested?: number;
+  dbUserId?: string;
 }
 
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'allin';
@@ -79,4 +80,5 @@ export interface Room {
   gameContext: GameContext;
   deck: Card[];
   isTraining?: boolean;
+  botLogs?: string[];
 }
