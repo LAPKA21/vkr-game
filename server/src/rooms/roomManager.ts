@@ -100,11 +100,11 @@ export function listRooms(): Room[] {
 export function joinRoom(roomId: string, playerId: string, playerName: string, initialChips = 1000, dbUserId?: string, deviceId?: string): { room: Room; player: Player } | null {
   const room = rooms.get(roomId);
   if (!room || room.players.length >= room.maxPlayers) return null;
-  
+
   // Ищем существующего игрока по сессии: dbUserId (авторизованные) или deviceId (анонимы) или socketId
-  const existing = room.players.find((p) => 
-    (dbUserId && p.dbUserId === dbUserId) || 
-    (p.deviceId && deviceId && p.deviceId === deviceId) || 
+  const existing = room.players.find((p) =>
+    (dbUserId && p.dbUserId === dbUserId) ||
+    (p.deviceId && deviceId && p.deviceId === deviceId) ||
     (p.id === playerId)
   );
 
@@ -122,7 +122,7 @@ export function joinRoom(roomId: string, playerId: string, playerName: string, i
     // We do NOT reset their chips if they are reconnecting
     return { room, player: existing };
   }
-  
+
   const player = createPlayer(playerId, playerName, false, initialChips, dbUserId, deviceId);
   room.players.push(player);
   playerToRoom.set(playerId, roomId);
@@ -137,7 +137,7 @@ export function leaveRoom(playerId: string): Room | null {
   const player = room.players.find((p) => p.id === playerId);
   if (player) {
     player.connected = false;
-    
+
     // Синхронизируем фишки обратно в БД при выходе, чтобы они не пропали
     if (player.dbUserId && player.chips >= 0) {
       prisma.user.update({
@@ -175,7 +175,7 @@ export function leaveRoom(playerId: string): Room | null {
  */
 function syncRoomDbChips(room: Room) {
   if (room.isTraining) return; // В тренировке фишки виртуальные
-  
+
   for (const p of room.players) {
     if (p.dbUserId && p.chips >= 0) {
       // Это действие ОБНОВЛЯЕТ фишки в БД до текущего значения на столе 
@@ -195,14 +195,14 @@ function syncRoomDbChips(room: Room) {
  */
 function updateRatings(room: Room, winners: number[]) {
   if (room.isTraining) return; // В тренировке рейтинг не меняется
-  
+
   for (let i = 0; i < room.players.length; i++) {
     const p = room.players[i];
     // Обновляем рейтинг только реальным игрокам, которые вложили фишки в банк
     if (p.dbUserId && (p.invested || 0) > 0) {
       const isWinner = winners.includes(i);
       const ratingChange = isWinner ? 25 : -10;
-      
+
       prisma.user.update({
         where: { id: p.dbUserId },
         data: { rating: { increment: ratingChange } }
@@ -244,13 +244,15 @@ export function startGame(roomId: string): boolean {
   sb.chips -= sbAmount;
   sb.currentBet = sbAmount;
   sb.invested = sbAmount;
+  sb.lastAction = 'small_blind';
   if (sb.chips === 0) sb.allIn = true;
-  
+
   bb.chips -= bbAmount;
   bb.currentBet = bbAmount;
   bb.invested = bbAmount;
+  bb.lastAction = 'big_blind';
   if (bb.chips === 0) bb.allIn = true;
-  
+
   ctx.pot = sbAmount + bbAmount;
 
   let deck = room.deck;
@@ -493,7 +495,7 @@ function doShowdown(room: Room): number[] {
     rank: p.folded ? undefined : evaluateHand(p.cards, room.gameContext.communityCards)
   }));
 
-  const uniqueInvested = Array.from(new Set(players.filter(p => p.invested > 0).map(p => p.invested))).sort((a,b)=>a-b);
+  const uniqueInvested = Array.from(new Set(players.filter(p => p.invested > 0).map(p => p.invested))).sort((a, b) => a - b);
   let currentInvestedLevel = 0;
   const overallWinners = new Set<number>();
 

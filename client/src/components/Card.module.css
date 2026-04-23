@@ -34,8 +34,7 @@
   background-size: 1300% 400%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  border-radius: 4px; /* Slightly sharper corners for pixel art */
-  clip-path: inset(3px); /* Crops the outermost white border pixels from the sprite */
+  border-radius: 6px; 
 }
 
 .faceDown {

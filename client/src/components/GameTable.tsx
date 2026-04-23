@@ -5,6 +5,16 @@ import { getStateLabel } from '../state/gameStateMachine';
 import type { RoomState } from '../types';
 import styles from './GameTable.module.css';
 
+const ACTION_NAMES_RU: Record<string, string> = {
+  fold: 'Сброс',
+  check: 'Чек',
+  call: 'Колл',
+  raise: 'Рейз',
+  allin: 'Ва-банк',
+  small_blind: 'М. Блайнд',
+  big_blind: 'Б. Блайнд',
+};
+
 interface Props {
   room: RoomState;
   myId: string;
@@ -124,7 +134,9 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
           )}
 
           {p.lastAction && (
-            <span className={styles.lastAction}>{p.lastAction}</span>
+            <div className={`${styles.actionBadge} ${styles['action_' + p.lastAction]}`}>
+              {ACTION_NAMES_RU[p.lastAction] || p.lastAction}
+            </div>
           )}
 
           {p.chips === 0 && p.isBot && (

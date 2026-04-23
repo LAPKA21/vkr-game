@@ -1,11 +1,11 @@
 .table {
   position: relative;
-  width: 100%;
-  max-width: 1200px;
-  height: calc(100vh - 10rem); /* Adapts to screen height, leaving space for headers/margins */
-  min-height: 550px;
-  max-height: 850px;
-  margin: 0 auto;
+  width: 95%; /* Make it wider */
+  max-width: 1600px; /* Expand maximum allowance */
+  height: calc(100vh - 4rem);
+  min-height: 600px;
+  max-height: 900px; /* Taller on big screens */
+  margin: 2rem auto;
   padding: 1.5rem;
 
   background: linear-gradient(160deg, #0a4d2e 0%, #063d24 100%);
@@ -14,7 +14,7 @@
 
   box-shadow:
     0 0 0 2px rgba(0,0,0,0.3),
-    inset 0 0 60px rgba(0,0,0,0.2);
+    inset 0 0 80px rgba(0,0,0,0.3);
 }
 
 .stateBar {
@@ -47,11 +47,11 @@
 .community {
   display: flex;
   justify-content: center;
-  gap: 1rem; /* Increased gap */
-  margin-top: 5rem; /* Push cards lower to center them better */
+  gap: 1.5rem; 
+  margin-top: 6rem;
   margin-bottom: 2rem;
-  min-height: 120px; /* Taller area */
-  transform: scale(1.3); /* Scale up community cards */
+  min-height: 140px;
+  transform: scale(1.4); /* Make community cards a bit bigger */
 }
 
 .players {
@@ -98,10 +98,47 @@
 }
 
 .chips,
-.bet,
-.lastAction {
+.bet {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.85);
+}
+
+.actionBadge {
+  display: inline-block;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 4px;
+  text-align: left;
+  letter-spacing: 0.5px;
+}
+
+.action_fold {
+  color: #ef4444; /* Red for fold */
+}
+
+.action_check {
+  color: #22c55e; /* Green for check */
+}
+
+.action_call {
+  color: #3b82f6; /* Blue for call */
+}
+
+.action_raise {
+  color: #a855f7; /* Purple for raise */
+}
+
+.action_allin {
+  color: #f59e0b; /* Amber/Orange for all-in */
+  text-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+.action_small_blind,
+.action_big_blind {
+  color: #94a3b8; /* Slate gray for blinds */
+  font-weight: 600;
 }
 
 .playerCards {
