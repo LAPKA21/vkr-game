@@ -27,7 +27,7 @@ export interface Player {
   deviceId?: string;
 }
 
-export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'allin';
+export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'allin' | 'small_blind' | 'big_blind';
 
 export interface PlayerAction {
   type: PlayerActionType;
