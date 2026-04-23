@@ -57,8 +57,8 @@ export function registerSocketHandlers(io: Server): void {
       });
     });
 
-    socket.on('room:join', async (data: { roomId: string; playerName: string; token?: string }) => {
-      const { roomId, playerName, token } = data || {};
+    socket.on('room:join', async (data: { roomId: string; playerName: string; token?: string; deviceId?: string }) => {
+      const { roomId, playerName, token, deviceId } = data || {};
       if (!roomId || !playerName?.trim()) {
         socket.emit('error', { message: 'roomId и playerName обязательны' });
         return;
@@ -73,14 +73,20 @@ export function registerSocketHandlers(io: Server): void {
       let initialChips = 1000;
       let dbUserId: string | undefined = undefined;
 
-      // Если комната не тренировочная, забираем фишки из БД
-      if (!roomCheck.isTraining && token) {
+      // Извлекаем пользователя из токена для сессии всегда, даже в обучающей комнате (для реконнекта)
+      if (token) {
         try {
           const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-          const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+          dbUserId = decoded.userId;
+        } catch(e) {}
+      }
+
+      // Если комната не тренировочная и токен валидный, забираем фишки из БД
+      if (!roomCheck.isTraining && dbUserId) {
+        try {
+          const user = await prisma.user.findUnique({ where: { id: dbUserId } });
           if (user) {
             initialChips = user.chips;
-            dbUserId = user.id;
             // Обнуляем фишки в БД (переносим на стол)
             await prisma.user.update({ where: { id: user.id }, data: { chips: 0 } });
           } else {
@@ -89,7 +95,7 @@ export function registerSocketHandlers(io: Server): void {
           }
         } catch (e) {
           console.error('Save socket auth error:', e);
-          socket.emit('error', { message: 'Ошибка авторизации. Попробуйте перезайти.' });
+          socket.emit('error', { message: 'Ошибка БД. Попробуйте перезайти.' });
           return;
         }
       }
@@ -97,7 +103,8 @@ export function registerSocketHandlers(io: Server): void {
       // Выходим из старой комнаты, если игрок уже где-то сидит (SPA нюансы)
       leaveRoom(socket.id);
 
-      const result = joinRoom(roomId, socket.id, playerName.trim(), initialChips, dbUserId);
+      // Передаем deviceId для анонимных пользователей
+      const result = joinRoom(roomId, socket.id, playerName.trim(), initialChips, dbUserId, deviceId);
       if (!result) {
         socket.emit('error', { message: 'Не удалось войти в комнату' });
         
@@ -237,17 +244,8 @@ export function registerSocketHandlers(io: Server): void {
       if (!room) return;
       
       const p = room.players.find(p => p.id === targetPlayerId);
-      if (p) {
+      if (p && p.isBot) { // Только ботам можно выдавать бесплатные фишки
         p.chips += amount;
-        
-        // Сразу сохраняем изменения в БД, если это реальный игрок
-        if (p.dbUserId && !room.isTraining) {
-            prisma.user.update({
-              where: { id: p.dbUserId },
-              data: { chips: p.chips }
-            }).catch(e => console.error('game:addChips DB error', e));
-        }
-
         io.to(roomId).emit('game:state', serializeRoom(room));
       }
     });

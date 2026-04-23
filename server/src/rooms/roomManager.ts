@@ -38,7 +38,7 @@ function createEmptyContext(): GameContext {
   };
 }
 
-function createPlayer(id: string, name: string, isBot = false, initialChips = 1000, dbUserId?: string): Player {
+function createPlayer(id: string, name: string, isBot = false, initialChips = 1000, dbUserId?: string, deviceId?: string): Player {
   return {
     id,
     name,
@@ -49,7 +49,8 @@ function createPlayer(id: string, name: string, isBot = false, initialChips = 10
     allIn: false,
     isBot: isBot || undefined,
     connected: !isBot,
-    dbUserId
+    dbUserId,
+    deviceId
   };
 }
 
@@ -96,17 +97,33 @@ export function listRooms(): Room[] {
   return [...rooms.values()].filter((r) => !r.isTraining && r.players.length < r.maxPlayers);
 }
 
-export function joinRoom(roomId: string, playerId: string, playerName: string, initialChips = 1000, dbUserId?: string): { room: Room; player: Player } | null {
+export function joinRoom(roomId: string, playerId: string, playerName: string, initialChips = 1000, dbUserId?: string, deviceId?: string): { room: Room; player: Player } | null {
   const room = rooms.get(roomId);
   if (!room || room.players.length >= room.maxPlayers) return null;
-  const existing = room.players.find((p) => p.id === playerId);
+  
+  // Ищем существующего игрока по сессии: dbUserId (авторизованные) или deviceId (анонимы) или socketId
+  const existing = room.players.find((p) => 
+    (dbUserId && p.dbUserId === dbUserId) || 
+    (p.deviceId && deviceId && p.deviceId === deviceId) || 
+    (p.id === playerId)
+  );
+
   if (existing) {
     existing.connected = true;
     existing.name = playerName;
+
+    // Если игрок реконнектнулся с новой вкладки (новый socket.id), обновляем socket.id, чтобы сервер пересылал ответы правильно
+    if (existing.id !== playerId) {
+      playerToRoom.delete(existing.id);
+      existing.id = playerId;
+      playerToRoom.set(playerId, roomId);
+    }
+
     // We do NOT reset their chips if they are reconnecting
     return { room, player: existing };
   }
-  const player = createPlayer(playerId, playerName, false, initialChips, dbUserId);
+  
+  const player = createPlayer(playerId, playerName, false, initialChips, dbUserId, deviceId);
   room.players.push(player);
   playerToRoom.set(playerId, roomId);
   return { room, player };

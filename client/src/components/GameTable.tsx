@@ -127,7 +127,7 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
             <span className={styles.lastAction}>{p.lastAction}</span>
           )}
 
-          {p.chips === 0 && (
+          {p.chips === 0 && p.isBot && (
             <button 
               className={styles.reloadChipsBtn} 
               onClick={() => addGameChips(room.roomId, p.id, 1000)}

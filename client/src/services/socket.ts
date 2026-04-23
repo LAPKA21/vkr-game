@@ -44,8 +44,10 @@ export function createTrainingRoom(name: string, difficulty?: string) {
   emit('room:createTraining', { name, difficulty });
 }
 
+const DEVICE_ID = localStorage.getItem('deviceId') || (()=>{ const id = Math.random().toString(36).substring(2); localStorage.setItem('deviceId', id); return id; })();
+
 export function joinRoom(roomId: string, playerName: string, token?: string) {
-  emit('room:join', { roomId, playerName, token });
+  emit('room:join', { roomId, playerName, token, deviceId: DEVICE_ID });
 }
 
 export function leaveRoom() {

@@ -24,6 +24,7 @@ export interface Player {
   currentHandNameRu?: string;
   invested?: number;
   dbUserId?: string;
+  deviceId?: string;
 }
 
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'allin';

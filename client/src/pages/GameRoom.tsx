@@ -16,7 +16,7 @@ export default function GameRoom() {
   const [playerName, setPlayerName] = useState('');
   const [joinError, setJoinError] = useState('');
   const joined = useRef(false);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   useEffect(() => {
     const handleConnect = () => setMyId(socket.id ?? null);
@@ -37,7 +37,7 @@ export default function GameRoom() {
 
   useEffect(() => {
     if (!roomId) return;
-    const stateName = (location.state as { playerName?: string })?.playerName;
+    const stateName = (location.state as { playerName?: string })?.playerName || user?.username;
     if (stateName) {
       setPlayerName(stateName);
       if (!joined.current) {
@@ -45,7 +45,7 @@ export default function GameRoom() {
         joinRoom(roomId, stateName, token ?? undefined);
       }
     }
-  }, [roomId, location.state]);
+  }, [roomId, location.state, user, token]);
 
   useEffect(() => {
     if (!roomId) return;
