@@ -44,15 +44,15 @@ export function rankValue(rank: Rank): number {
 
 /** Оценка силы руки: чем больше, тем лучше. Упрощенная версия для бота и шоудауна. */
 export type HandRank =
-  | { type: 'high'; value: number }
-  | { type: 'pair'; value: number; kicker: number }
-  | { type: 'twopair'; high: number; low: number; kicker: number }
-  | { type: 'trips'; value: number; kicker: number }
-  | { type: 'straight'; high: number }
-  | { type: 'flush'; high: number }
-  | { type: 'fullhouse'; trips: number; pair: number }
-  | { type: 'quads'; value: number; kicker: number }
-  | { type: 'straightflush'; high: number };
+  | { type: 'high'; value: number; tiebreakers?: number[] }
+  | { type: 'pair'; value: number; kicker: number; tiebreakers?: number[] }
+  | { type: 'twopair'; high: number; low: number; kicker: number; tiebreakers?: number[] }
+  | { type: 'trips'; value: number; kicker: number; tiebreakers?: number[] }
+  | { type: 'straight'; high: number; tiebreakers?: number[] }
+  | { type: 'flush'; high: number; tiebreakers?: number[] }
+  | { type: 'fullhouse'; trips: number; pair: number; tiebreakers?: number[] }
+  | { type: 'quads'; value: number; kicker: number; tiebreakers?: number[] }
+  | { type: 'straightflush'; high: number; tiebreakers?: number[] };
 
 export type HandRankType = HandRank['type'];
 
@@ -92,9 +92,9 @@ function isStraight(values: number[]): { is: boolean; high: number } {
 /** Оценивает лучшую руку из 5-7 карт (2 свои + до 5 общих). */
 export function evaluateHand(playerCards: Card[], communityCards: Card[]): HandRank {
   const all = [...playerCards, ...communityCards];
-  if (all.length < 5) return { type: 'high', value: Math.max(...all.map((c) => rankValue(c.rank))) };
-
   const values = getValues(all);
+  if (all.length < 5) return { type: 'high', value: values[0] || 0, tiebreakers: values.slice(0, 5) };
+
   const bySuit = new Map<Suit, Card[]>();
   for (const c of all) {
     const arr = bySuit.get(c.suit) ?? [];
@@ -106,8 +106,8 @@ export function evaluateHand(playerCards: Card[], communityCards: Card[]): HandR
     if (suitCards.length >= 5) {
       const suitValues = getValues(suitCards);
       const str = isStraight(suitValues);
-      if (str.is) return { type: 'straightflush', high: str.high };
-      return { type: 'flush', high: Math.max(...suitValues) };
+      if (str.is) return { type: 'straightflush', high: str.high, tiebreakers: [str.high] };
+      return { type: 'flush', high: suitValues[0], tiebreakers: suitValues.slice(0, 5) };
     }
   }
 
@@ -116,30 +116,34 @@ export function evaluateHand(playerCards: Card[], communityCards: Card[]): HandR
   const quads = entries.find(([, n]) => n === 4);
   if (quads) {
     const kicker = entries.find(([v]) => v !== quads[0])?.[0] ?? 0;
-    return { type: 'quads', value: quads[0], kicker };
+    return { type: 'quads', value: quads[0], kicker, tiebreakers: [quads[0], kicker] };
   }
   const trips = entries.find(([, n]) => n === 3);
   const pairEntry = entries.find(([v, n]) => n >= 2 && v !== trips?.[0]);
   if (trips && pairEntry) {
-    return { type: 'fullhouse', trips: trips[0], pair: pairEntry[0] };
+    return { type: 'fullhouse', trips: trips[0], pair: pairEntry[0], tiebreakers: [trips[0], pairEntry[0]] };
   }
   const str = isStraight(values);
-  if (str.is) return { type: 'straight', high: str.high };
+  if (str.is) return { type: 'straight', high: str.high, tiebreakers: [str.high] };
+  
   if (trips) {
     const kicker = entries.find(([v]) => v !== trips[0])?.[0] ?? 0;
-    return { type: 'trips', value: trips[0], kicker };
+    const tiebreakers = [trips[0], ...values.filter(v => v !== trips[0])].slice(0, 5);
+    return { type: 'trips', value: trips[0], kicker, tiebreakers };
   }
   const twoPairs = entries.filter(([, n]) => n === 2);
   if (twoPairs.length >= 2) {
     const [high, low] = twoPairs.map(([v]) => v).sort((a, b) => b - a);
     const kicker = entries.find(([v]) => v !== high && v !== low)?.[0] ?? 0;
-    return { type: 'twopair', high, low, kicker };
+    const tiebreakers = [high, low, ...values.filter(v => v !== high && v !== low)].slice(0, 5);
+    return { type: 'twopair', high, low, kicker, tiebreakers };
   }
   if (pairEntry) {
     const kicker = entries.find(([v]) => v !== pairEntry[0])?.[0] ?? 0;
-    return { type: 'pair', value: pairEntry[0], kicker };
+    const tiebreakers = [pairEntry[0], ...values.filter(v => v !== pairEntry[0])].slice(0, 5);
+    return { type: 'pair', value: pairEntry[0], kicker, tiebreakers };
   }
-  return { type: 'high', value: values[0] };
+  return { type: 'high', value: values[0], tiebreakers: values.slice(0, 5) };
 }
 
 /** Сравнение двух HandRank для определения победителя. Возвращает >0 если a лучше, <0 если b лучше, 0 ничья. */
@@ -148,6 +152,18 @@ export function compareHandRanks(a: HandRank, b: HandRank): number {
   const ia = order.indexOf(a.type);
   const ib = order.indexOf(b.type);
   if (ia !== ib) return ia - ib;
+  
+  // Идеальное сравнение по 5 картам (tiebreakers)
+  if ('tiebreakers' in a && 'tiebreakers' in b) {
+    const ta = (a as any).tiebreakers as number[];
+    const tb = (b as any).tiebreakers as number[];
+    for (let i = 0; i < Math.min(ta.length, tb.length); i++) {
+       if (ta[i] !== tb[i]) return ta[i] - tb[i];
+    }
+    return 0; // Полная ничья
+  }
+
+  // Фолбэк для старого кода (если tiebreakers по какой-то причине не установлены)
   switch (a.type) {
     case 'high':
       return (a as { value: number }).value - (b as { value: number }).value;

@@ -101,14 +101,15 @@ export class MarkovModel {
         };
       case BotDifficulty.NORMAL:
         return {
-          WEAK: { FOLD: 0.4, CHECK: 0.35, CALL: 0.2, RAISE: 0.04, ALL_IN: 0.01 },
-          MEDIUM: { FOLD: 0.15, CHECK: 0.35, CALL: 0.3, RAISE: 0.17, ALL_IN: 0.03 },
+          // Reduced blind folding; more checks/calls
+          WEAK: { FOLD: 0.25, CHECK: 0.45, CALL: 0.25, RAISE: 0.04, ALL_IN: 0.01 },
+          MEDIUM: { FOLD: 0.1, CHECK: 0.35, CALL: 0.35, RAISE: 0.17, ALL_IN: 0.03 },
           STRONG: { FOLD: 0.02, CHECK: 0.15, CALL: 0.2, RAISE: 0.5, ALL_IN: 0.13 },
         };
       case BotDifficulty.HARD:
         return {
-          WEAK: { FOLD: 0.3, CHECK: 0.4, CALL: 0.25, RAISE: 0.04, ALL_IN: 0.01 },
-          MEDIUM: { FOLD: 0.1, CHECK: 0.3, CALL: 0.35, RAISE: 0.2, ALL_IN: 0.05 },
+          WEAK: { FOLD: 0.15, CHECK: 0.45, CALL: 0.35, RAISE: 0.04, ALL_IN: 0.01 },
+          MEDIUM: { FOLD: 0.05, CHECK: 0.3, CALL: 0.4, RAISE: 0.2, ALL_IN: 0.05 },
           STRONG: { FOLD: 0.01, CHECK: 0.1, CALL: 0.15, RAISE: 0.55, ALL_IN: 0.19 },
         };
       default:

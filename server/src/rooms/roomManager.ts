@@ -364,6 +364,7 @@ export function applyPlayerAction(
   clearTurnTimeout(room.id);
 
   if (onlyOnePlayerLeft(room.players)) {
+    collectBets(room); // ВАЖНО: собрать текущие ставки перед тем как отдавать банк
     const winnerIndex = room.players.findIndex((p) => !p.folded);
     const winner = room.players[winnerIndex];
     winner.chips += ctx.pot;
