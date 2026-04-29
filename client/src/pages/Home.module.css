@@ -40,10 +40,11 @@
 }
 
 .subtitle {
-  font-size: 1.1rem;
+  font-size: 2rem;
   color: #c9a227;
   letter-spacing: 0.2em;
   margin-bottom: 3rem;
+  font-weight: 600;
 }
 
 .buttons {
@@ -118,7 +119,6 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   width: 100%;
-  max-width: 1400px;
   margin: 2rem auto 0;
   align-items: flex-start;
 }
@@ -126,7 +126,7 @@
 .leftCol {
   display: flex;
   width: 100%;
-  padding-left: 2rem;
+  padding-left: 0;
   padding-right: 2rem;
 }
 
