@@ -212,15 +212,33 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
             </button>
           )}
           <div className={styles.raiseRow}>
-            <input
-              type="number"
-              min={minRaise}
-              max={players[myIndex]?.chips ?? 0}
-              value={raiseAmount}
-              onChange={(e) => setRaiseAmount(Number(e.target.value) || minRaise)}
-            />
+            <div className={styles.sliderContainer}>
+              <input
+                type="range"
+                className={styles.slider}
+                min={minRaise}
+                max={players[myIndex]?.chips ?? minRaise}
+                value={raiseAmount}
+                onChange={(e) => setRaiseAmount(Number(e.target.value) || minRaise)}
+              />
+              <div className={styles.sliderValues}>
+                <span>Мин: {minRaise}</span>
+                <span className={styles.sliderCurrent}>
+                  Ставка: 
+                  <input
+                    type="number"
+                    className={styles.raiseInput}
+                    min={minRaise}
+                    max={players[myIndex]?.chips ?? minRaise}
+                    value={raiseAmount}
+                    onChange={(e) => setRaiseAmount(Number(e.target.value) || minRaise)}
+                  />
+                </span>
+                <span>Всего: {players[myIndex]?.chips ?? minRaise}</span>
+              </div>
+            </div>
             <button className={styles.raiseBtn} onClick={() => onAction('raise', raiseAmount)}>
-              Поднять
+              Рейз
             </button>
           </div>
           <button className={styles.allinBtn} onClick={() => onAction('allin', players[myIndex]?.chips ?? 0)}>

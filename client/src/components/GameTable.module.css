@@ -210,13 +210,59 @@
 
 .raiseRow {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 162, 39, 0.3);
 }
 
-.raiseRow input {
-  width: 80px;
+.sliderContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 220px;
+}
+
+.slider {
+  width: 100%;
+  accent-color: #c9a227;
+  cursor: pointer;
+}
+
+.sliderValues {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sliderCurrent {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.raiseInput {
+  width: 60px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(201, 162, 39, 0.5);
+  color: #c9a227;
+  font-weight: bold;
   text-align: center;
+  border-radius: 4px;
+  padding: 0.15rem;
+  font-size: 0.85rem;
+  -moz-appearance: textfield;
+}
+
+.raiseInput::-webkit-outer-spin-button,
+.raiseInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .raiseBtn {

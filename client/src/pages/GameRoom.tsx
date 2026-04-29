@@ -80,7 +80,7 @@ export default function GameRoom() {
     return (
       <div className={styles.page}>
         <p>Комната не указана.</p>
-        <button onClick={() => navigate('/servers')}>К списку серверов</button>
+        <button onClick={() => navigate('/servers')}>К списку игровых комнат</button>
       </div>
     );
   }

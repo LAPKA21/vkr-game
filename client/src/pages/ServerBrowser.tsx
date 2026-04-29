@@ -45,7 +45,7 @@ export default function ServerBrowser() {
         <button className={styles.back} onClick={() => navigate('/')}>
           ← Назад
         </button>
-        <h1 className={styles.title}>Список серверов</h1>
+        <h1 className={styles.title}>Список игровых комнат</h1>
       </div>
       <div className={styles.create}>
         <input
@@ -56,7 +56,7 @@ export default function ServerBrowser() {
           onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
         />
         <button onClick={handleCreate} disabled={creating || !createName.trim()}>
-          {creating ? 'Создание…' : 'Создать сервер'}
+          {creating ? 'Создание…' : 'Создать игровую комнату'}
         </button>
       </div>
       <div className={styles.list}>
