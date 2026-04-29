@@ -102,16 +102,16 @@ export function evaluateHandStrength(
       const isPair = playerCards[0].rank === playerCards[1].rank;
       const suited = playerCards[0].suit === playerCards[1].suit;
 
-      // Premium pairs (10+) or AK
-      if ((isPair && highCard >= 10) || (highCard >= 13 && playerCards.some(c => ['A','K'].includes(c.rank)))) {
-        // Only AK, AQ, or Pair 10+ gets strong/medium
+      // Сильный пары
+      if ((isPair && highCard >= 10) || (highCard >= 13 && playerCards.some(c => ['A', 'K'].includes(c.rank)))) {
+        // Только тузы, короли, дамы, валеты и пары 10+
         if ((isPair && highCard >= 10) || (highCard === 14 && playerCards.some(c => c.rank === 'K'))) {
           return 'STRONG';
         }
         return 'MEDIUM';
       }
-      
-      // Any pair, or high cards (10+) gets MEDIUM at best
+
+      // Если есть пара или страшая карта до 10 то, ставится medium и weak
       if (isPair || highCard >= 10) {
         return highCard >= 12 || isPair ? 'MEDIUM' : 'WEAK';
       }

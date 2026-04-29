@@ -8,10 +8,6 @@
  *
  * Переходы: вероятности выбора действий (FOLD, CHECK, CALL, RAISE, ALL_IN)
  *
- * Математика:
- * P(action | state) = transitionMatrix[stateKey][action]
- * где stateKey = `${phase}_${handStrength}_${opponentLastAction}`
- *
  * Выбор действия происходит через weighted random selection:
  * 1. Получаем вероятности для текущего состояния
  * 2. Нормализуем их (сумма = 1)
@@ -144,7 +140,7 @@ export class MarkovModel {
     }
 
     const style = this.getOpponentStyle();
-    
+
     // Адаптация вероятностей в зависимости от действия и стиля оппонента
     const adaptedProbs = this.adaptProbabilities(probabilities, state.opponentLastAction, state.handStrength, style);
 
@@ -168,7 +164,7 @@ export class MarkovModel {
    */
   getOpponentStyle(): OpponentStyle {
     if (this.opponentActionHistory.length < 5) return 'NORMAL';
-    
+
     const aggrCount = this.opponentActionHistory.filter(a => a === 'raise' || a === 'allin').length;
     const passiveCount = this.opponentActionHistory.filter(a => a === 'fold' || a === 'check').length;
 

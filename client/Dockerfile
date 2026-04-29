@@ -16,12 +16,22 @@ RUN npm run build
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
+# Генерируем простой самоподписанный SSL-сертификат
+RUN apk add --no-cache openssl && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/nginx-selfsigned.key \
+    -out /etc/ssl/certs/nginx-selfsigned.crt \
+    -subj "/C=RU/O=PokerGame/CN=localhost"
+
 # Копируем собранные файлы в папку, из которой Nginx их раздает
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Копируем конфиг nginx для поддержки React Router и проксирования к Node.js
+# Копируем конфиг nginx для поддержки SSL, React Router и проксирования
 RUN echo 'server { \
     listen 80; \
+    listen 443 ssl; \
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt; \
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key; \
     location / { \
         root /usr/share/nginx/html; \
         index index.html index.htm; \
@@ -41,5 +51,5 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]

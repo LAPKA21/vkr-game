@@ -29,12 +29,17 @@
   font-size: 0.85rem;
 }
 
-.pixelCard {
-  background-image: url('/cards.png');
-  background-size: 1300% 400%;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  border-radius: 6px; 
+.imageCard {
+  background: transparent;
+  box-shadow: none; /* Removed shadow since the PNG might have its own or we just want the image without the white box */
+  overflow: visible;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); /* Adds a shadow matching the card shape if transparent */
 }
 
 .faceDown {

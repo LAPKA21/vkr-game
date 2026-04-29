@@ -45,7 +45,7 @@ export default function Home() {
                 Играть онлайн
               </button>
               <button className={styles.secondary} onClick={() => navigate('/servers')}>
-                Список серверов
+                Список игровых комнат
               </button>
 
               <button
