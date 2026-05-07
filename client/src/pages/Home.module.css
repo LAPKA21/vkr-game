@@ -116,128 +116,43 @@
   border-color: rgba(201, 162, 39, 0.8);
 }
 
-.mainArea {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  width: 100%;
-  margin: 2rem auto 0;
-  align-items: flex-start;
-}
-
-.leftCol {
+.bottomLeftControls {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
   display: flex;
-  width: 100%;
-  padding-left: 0;
-  padding-right: 2rem;
+  gap: 1rem;
+  z-index: 10;
 }
 
-.centerCol {
-  display: flex;
-  justify-content: center;
-}
-
-.rightCol {
-  /* Empty column to perfectly balance the left column */
-}
-
-.profilePanel {
+.profileBtn {
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(201, 162, 39, 0.4);
-  border-radius: 16px;
-  padding: 2rem;
-  width: 100%;
-  text-align: center;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.profileAvatar {
-  width: 80px;
-  height: 80px;
-  background: rgba(201, 162, 39, 0.2);
-  border-radius: 50%;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  border: 2px solid #c9a227;
-}
-
-.profileName {
-  margin: 0;
-  color: #fff;
-  font-size: 1.5rem;
-}
-
-.profileEmail {
-  margin: 0;
-  color: #a0a0a0;
-  font-size: 0.9rem;
-}
-
-.profileStats {
-  display: flex;
-  justify-content: space-around;
-  background: rgba(0,0,0,0.3);
-  border-radius: 12px;
-  padding: 1rem 0.5rem;
-}
-
-.statBox {
-  text-align: center;
-}
-
-.statValue {
-  font-size: 1.3rem;
   color: #c9a227;
-  font-weight: bold;
-}
-
-.statValueGreen {
-  font-size: 1.3rem;
-  color: #10b981;
-  font-weight: bold;
-}
-
-.statLabel {
-  font-size: 0.7rem;
-  color: #a0a0a0;
-  text-transform: uppercase;
-  margin-top: 0.2rem;
-}
-
-.addChipsBtn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  padding: 0.9rem;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  padding: 0.8rem 1.2rem;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
-.addChipsBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+.profileBtn:hover {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: #c9a227;
 }
 
-.logoutBtn {
+.logoutBtnSmall {
   background: rgba(220, 53, 69, 0.2);
   color: #ff8795;
   border: 1px solid rgba(220, 53, 69, 0.4);
-  padding: 0.7rem;
+  padding: 0.8rem 1.2rem;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.logoutBtn:hover {
-  background: rgba(220, 53, 69, 0.3);
+.logoutBtnSmall:hover {
+  background: rgba(220, 53, 69, 0.4);
   border-color: rgba(220, 53, 69, 0.6);
 }
