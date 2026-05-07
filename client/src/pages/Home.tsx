@@ -114,7 +114,6 @@ export default function Home() {
           </button>
         </div>
       )}
-      </div>
       <div className={styles.decor} aria-hidden />
     </div>
   );
