@@ -3,18 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../state/AuthContext';
 import styles from './Home.module.css';
 
-const getRankName = (rating: number) => {
-  if (rating < 1000) return 'Новичок';
-  if (rating < 1200) return 'Любитель';
-  if (rating < 1500) return 'Профи';
-  return 'Грандмастер';
-};
-
 export default function Home() {
   const navigate = useNavigate();
-  const { user, addChips, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [botDifficulty, setBotDifficulty] = useState('NORMAL');
-  const [isAdding, setIsAdding] = useState(false);
 
   const handleLogout = () => {
     logout();
