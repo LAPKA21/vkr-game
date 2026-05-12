@@ -19,17 +19,6 @@ interface Props {
 export default function Card({ card, faceDown, small, index = 0 }: Props) {
   const [loaded, setLoaded] = useState(false);
 
-  if (faceDown) {
-    return (
-      <div
-        className={`${styles.card} ${styles.faceDown} ${small ? styles.small : ''}`}
-        style={{ animationDelay: `${index * 0.05}s` }}
-      >
-        <div className={styles.back} />
-      </div>
-    );
-  }
-
   const rankName = RANK_MAP[card.rank] || card.rank;
   const suitName = card.suit.toLowerCase();
   
@@ -41,16 +30,28 @@ export default function Card({ card, faceDown, small, index = 0 }: Props) {
 
   return (
     <div
-      className={`${styles.card} ${styles.imageCard} ${small ? styles.small : ''}`}
-      style={{ animationDelay: `${index * 0.05}s` }}
+      className={`${styles.cardWrapper} ${small ? styles.small : ''}`}
+      style={{ animationDelay: `${index * 0.1}s` }}
     >
-      <img 
-        src={imageSrc} 
-        alt={`${card.rank} of ${card.suit}`} 
-        className={styles.cardImage} 
-        style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.2s ease-in' }}
-        onLoad={() => setLoaded(true)}
-      />
+      <div className={`${styles.cardInner} ${faceDown ? styles.flipped : ''}`}>
+        
+        {/* Фронтальная сторона (Лицо карты) */}
+        <div className={styles.cardFront}>
+          <img 
+            src={imageSrc} 
+            alt={`${card.rank} of ${card.suit}`} 
+            className={styles.cardImage} 
+            style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.2s ease-in' }}
+            onLoad={() => setLoaded(true)}
+          />
+        </div>
+
+        {/* Тыльная сторона (Рубашка) */}
+        <div className={styles.cardBack}>
+          <div className={styles.backPattern} />
+        </div>
+        
+      </div>
     </div>
   );
 }

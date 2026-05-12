@@ -75,7 +75,13 @@
 }
 
 .player.current {
-  box-shadow: 0 0 0 2px #c9a227;
+  animation: activePulse 2s infinite ease-in-out;
+}
+
+@keyframes activePulse {
+  0% { box-shadow: 0 0 5px rgba(201, 162, 39, 0.4); border-color: rgba(201, 162, 39, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(201, 162, 39, 1); border-color: rgba(201, 162, 39, 1); }
+  100% { box-shadow: 0 0 5px rgba(201, 162, 39, 0.4); border-color: rgba(201, 162, 39, 0.5); }
 }
 
 .player.folded {
@@ -97,10 +103,23 @@
   font-size: 0.9rem;
 }
 
-.chips,
-.bet {
+.chips {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.85);
+}
+
+.bet {
+  font-size: 0.8rem;
+  color: #fbbf24;
+  font-weight: 600;
+  animation: chipPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-block;
+}
+
+@keyframes chipPop {
+  0% { transform: scale(0.5) translateY(10px); opacity: 0; }
+  60% { transform: scale(1.1) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .actionBadge {
