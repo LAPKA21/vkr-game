@@ -133,6 +133,8 @@ router.post('/login', async (req: Request, res: Response) => {
         username: user.username,
         chips: user.chips,
         rating: user.rating,
+        totalGamesPlayed: user.totalGamesPlayed,
+        totalChipsWon: user.totalChipsWon,
       }
     });
   } catch (error) {
@@ -162,6 +164,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
       username: user.username,
       chips: user.chips,
       rating: user.rating,
+      totalGamesPlayed: user.totalGamesPlayed,
+      totalChipsWon: user.totalChipsWon,
     });
   } catch (error) {
     console.error('Me endpoint error:', error);
@@ -195,6 +199,43 @@ router.post('/add-chips', authMiddleware, async (req: AuthRequest, res: Response
   } catch (error) {
     console.error('Add chips error:', error);
     res.status(500).json({ error: 'Ошибка сервера при начислении фишек' });
+  }
+});
+
+// Сохранение статистики после игры
+router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Необходима авторизация' });
+    }
+
+    const { gamesPlayed, chipsWon } = req.body;
+    
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        totalGamesPlayed: { increment: gamesPlayed || 0 },
+        totalChipsWon: { increment: chipsWon || 0 }
+      }
+    });
+
+    res.json({
+      message: 'Статистика успешно сохранена',
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        chips: user.chips,
+        rating: user.rating,
+        totalGamesPlayed: user.totalGamesPlayed,
+        totalChipsWon: user.totalChipsWon,
+      }
+    });
+  } catch (error) {
+    console.error('Save stats error:', error);
+    res.status(500).json({ error: 'Ошибка сервера при сохранении статистики' });
   }
 });
 

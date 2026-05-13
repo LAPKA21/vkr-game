@@ -6,6 +6,8 @@ interface User {
   username: string;
   chips: number;
   rating: number;
+  totalGamesPlayed?: number;
+  totalChipsWon?: number;
 }
 
 interface AuthContextType {
@@ -14,6 +16,7 @@ interface AuthContextType {
   login: (user: User, token: string) => void;
   logout: () => void;
   addChips: (amount?: number) => Promise<void>;
+  saveStats: (stats: { gamesPlayed: number, chipsWon: number }) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -82,8 +85,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const saveStats = async (stats: { gamesPlayed: number, chipsWon: number }) => {
+    if (!token || !user) return;
+    try {
+      const res = await fetch('/api/auth/save-stats', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(stats)
+      });
+      if (!res.ok) throw new Error('Ошибка сохранения статистики');
+      const data = await res.json();
+      setUser(data.user);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, addChips, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, addChips, saveStats, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

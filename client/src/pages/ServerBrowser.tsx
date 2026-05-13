@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { listRooms, createRoom, on, off } from '../services/socket';
 import { useAuth } from '../state/AuthContext';
 import type { RoomListItem } from '../types';
 import styles from './ServerBrowser.module.css';
+import PostGamePopup, { PostGameStats } from '../components/PostGamePopup';
 
 export default function ServerBrowser() {
   const navigate = useNavigate();
@@ -11,6 +12,12 @@ export default function ServerBrowser() {
   const [rooms, setRooms] = useState<RoomListItem[]>([]);
   const [creating, setCreating] = useState(false);
   const [createName, setCreateName] = useState('');
+  const location = useLocation();
+  const postGameStats = location.state?.postGameStats as PostGameStats | undefined;
+
+  const closePopup = () => {
+    navigate(location.pathname, { replace: true, state: {} });
+  };
 
   useEffect(() => {
     listRooms();
@@ -77,6 +84,8 @@ export default function ServerBrowser() {
           </ul>
         )}
       </div>
+
+      {postGameStats && <PostGamePopup stats={postGameStats} onClose={closePopup} />}
     </div>
   );
 }

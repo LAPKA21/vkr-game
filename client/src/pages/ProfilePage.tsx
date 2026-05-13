@@ -46,7 +46,8 @@ const ProfilePage: React.FC = () => {
           <p style={{ color: 'var(--text-muted)' }}>{user.email}</p>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-around', margin: '2rem 0', padding: '1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '12px' }}>
+        <h4 style={{ color: '#fff', margin: '0 0 0.5rem 0.5rem' }}>Текущий статус</h4>
+        <div style={{ display: 'flex', justifyContent: 'space-around', margin: '0 0 1.5rem 0', padding: '1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '12px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '1.5rem', color: 'var(--accent-gold)', fontWeight: 'bold' }}>{user.chips}</div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Фишки</div>
@@ -58,6 +59,18 @@ const ProfilePage: React.FC = () => {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '1.5rem', color: 'var(--accent-gold)', fontWeight: 'bold' }}>{getRankName(user.rating ?? 1000)}</div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Ранг</div>
+          </div>
+        </div>
+
+        <h4 style={{ color: '#fff', margin: '0 0 0.5rem 0.5rem' }}>Статистика</h4>
+        <div style={{ display: 'flex', justifyContent: 'space-around', margin: '0 0 2rem 0', padding: '1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '12px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', color: '#f8fafc', fontWeight: 'bold' }}>{user.totalGamesPlayed ?? 0}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Партий сыграно</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', color: '#4ade80', fontWeight: 'bold' }}>{user.totalChipsWon ?? 0}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Всего выиграно</div>
           </div>
         </div>
 

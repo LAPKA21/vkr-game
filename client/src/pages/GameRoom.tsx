@@ -7,16 +7,6 @@ import GameTable from '../components/GameTable';
 import type { RoomState, GameState } from '../types';
 import styles from './GameRoom.module.css';
 
-const FUNNY_PHRASES = [
-  "Мама говорила, что покер - это математика. Она не знала про твои блефы.",
-  "Ушли красиво! Ну или хотя бы ушли.",
-  "Главное не победа, а вовремя унести ноги.",
-  "Фишки - пыль, главное - эмоции!",
-  "Казино всегда в выигрыше, но сегодня ты оказал сопротивление.",
-  "Твой внутренний Фил Айви гордится тобой.",
-  "Зато теперь можно спокойно попить чай."
-];
-
 export default function GameRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -26,13 +16,22 @@ export default function GameRoom() {
   const [playerName, setPlayerName] = useState('');
   const [joinError, setJoinError] = useState('');
   const joined = useRef(false);
-  const { token, user } = useAuth();
+  const { token, user, saveStats } = useAuth();
 
-  const [showExitPopup, setShowExitPopup] = useState(false);
   const [stats, setStats] = useState({ initialChips: 0, currentChips: 0, gamesPlayed: 0, chipsWon: 0 });
   const initializedStats = useRef(false);
   const lastGameState = useRef<GameState | null>(null);
-  const randomPhrase = useRef(FUNNY_PHRASES[Math.floor(Math.random() * FUNNY_PHRASES.length)]);
+
+  const handleExit = async () => {
+    if (stats.gamesPlayed > 0 || stats.chipsWon > 0 || stats.currentChips !== stats.initialChips) {
+      if (user) {
+        saveStats({ gamesPlayed: stats.gamesPlayed, chipsWon: stats.chipsWon }); // async fire and forget
+      }
+      navigate('/servers', { state: { postGameStats: stats } });
+    } else {
+      navigate('/servers');
+    }
+  };
 
   useEffect(() => {
     if (room?.gameContext?.state) {
@@ -179,7 +178,7 @@ export default function GameRoom() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.back} onClick={() => setShowExitPopup(true)}>
+        <button className={styles.back} onClick={handleExit}>
           ← Назад
         </button>
         <h1 className={styles.title}>{room?.name ?? 'Покер'}</h1>
@@ -192,51 +191,6 @@ export default function GameRoom() {
           onStart={() => startGame(roomId)}
           onRestart={() => restartRound(roomId)}
         />
-      )}
-
-      {showExitPopup && (
-        <div className={styles.popupOverlay}>
-          <div className={styles.popupContent}>
-            <h2 className={styles.popupTitle}>Статистика игры</h2>
-            
-            <div className={styles.statsList}>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>Сыграно партий:</span>
-                <span className={styles.statValue}>{stats.gamesPlayed}</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>Выиграно фишек:</span>
-                <span className={`${styles.statValue} ${styles.positive}`}>+{stats.chipsWon}</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>Изменение баланса:</span>
-                <span className={`${styles.statValue} ${stats.currentChips - stats.initialChips >= 0 ? styles.positive : styles.negative}`}>
-                  {stats.currentChips - stats.initialChips > 0 ? '+' : ''}{stats.currentChips - stats.initialChips}
-                </span>
-              </div>
-            </div>
-
-            <p className={styles.jokePhrase}>"{randomPhrase.current}"</p>
-
-            <div className={styles.popupButtons}>
-              <button 
-                className={styles.cancelExit} 
-                onClick={() => setShowExitPopup(false)}
-              >
-                Остаться
-              </button>
-              <button 
-                className={styles.confirmExit} 
-                onClick={() => {
-                  setShowExitPopup(false);
-                  navigate('/servers');
-                }}
-              >
-                Выйти
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

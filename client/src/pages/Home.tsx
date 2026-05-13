@@ -1,12 +1,19 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../state/AuthContext';
 import styles from './Home.module.css';
+import PostGamePopup, { PostGameStats } from '../components/PostGamePopup';
 
 export default function Home() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [botDifficulty, setBotDifficulty] = useState('NORMAL');
+  const location = useLocation();
+  const postGameStats = location.state?.postGameStats as PostGameStats | undefined;
+
+  const closePopup = () => {
+    navigate(location.pathname, { replace: true, state: {} });
+  };
 
   const handleLogout = () => {
     logout();
@@ -107,6 +114,8 @@ export default function Home() {
         </div>
       )}
       <div className={styles.decor} aria-hidden />
+
+      {postGameStats && <PostGamePopup stats={postGameStats} onClose={closePopup} />}
     </div>
   );
 }

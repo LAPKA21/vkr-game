@@ -2,8 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { joinRoom, leaveRoom, on, off, startGame, gameAction, restartRound } from '../services/socket';
 import { socket } from '../services/socket';
+import { useAuth } from '../state/AuthContext';
 import GameTable from '../components/GameTable';
-import type { RoomState } from '../types';
+import type { RoomState, GameState } from '../types';
 import styles from './GameRoom.module.css';
 
 export default function TrainingRoom() {
@@ -15,6 +16,48 @@ export default function TrainingRoom() {
   const [playerName, setPlayerName] = useState('');
   const [joinError, setJoinError] = useState('');
   const joined = useRef(false);
+  const { token, user, saveStats } = useAuth();
+
+  const [stats, setStats] = useState({ initialChips: 0, currentChips: 0, gamesPlayed: 0, chipsWon: 0 });
+  const initializedStats = useRef(false);
+  const lastGameState = useRef<GameState | null>(null);
+
+  const handleExit = async () => {
+    if (stats.gamesPlayed > 0 || stats.chipsWon > 0 || stats.currentChips !== stats.initialChips) {
+      if (user) {
+        saveStats({ gamesPlayed: stats.gamesPlayed, chipsWon: stats.chipsWon });
+      }
+      navigate('/', { state: { postGameStats: stats } });
+    } else {
+      navigate('/');
+    }
+  };
+
+  useEffect(() => {
+    if (room?.gameContext?.state) {
+      if (room.gameContext.state === 'ROUND_END' && lastGameState.current !== 'ROUND_END') {
+        setStats(s => ({ ...s, gamesPlayed: s.gamesPlayed + 1 }));
+      }
+      lastGameState.current = room.gameContext.state;
+    }
+
+    if (room && myId) {
+      const me = room.players.find(p => p.id === myId);
+      if (me) {
+        if (!initializedStats.current) {
+          setStats(s => ({ ...s, initialChips: me.chips, currentChips: me.chips }));
+          initializedStats.current = true;
+        } else {
+          setStats(s => {
+            if (s.currentChips === me.chips) return s;
+            const diff = me.chips - s.currentChips;
+            const newChipsWon = diff > 0 ? s.chipsWon + diff : s.chipsWon;
+            return { ...s, currentChips: me.chips, chipsWon: newChipsWon };
+          });
+        }
+      }
+    }
+  }, [room, myId]);
 
   useEffect(() => {
     const handleConnect = () => setMyId(socket.id ?? null);
@@ -148,7 +191,7 @@ export default function TrainingRoom() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.back} onClick={() => navigate('/')}>
+        <button className={styles.back} onClick={handleExit}>
           ← На главную
         </button>
         <h1 className={styles.title}>Обучение с ботом</h1>

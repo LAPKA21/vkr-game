@@ -21,5 +21,7 @@ model User {
   verificationToken  String?
   chips              Int      @default(1000)
   rating             Int      @default(1000)
+  totalGamesPlayed   Int      @default(0)
+  totalChipsWon      Int      @default(0)
   createdAt          DateTime @default(now())
 }
