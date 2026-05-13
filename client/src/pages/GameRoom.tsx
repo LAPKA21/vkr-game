@@ -4,8 +4,18 @@ import { joinRoom, leaveRoom, on, off, startGame, gameAction, restartRound } fro
 import { socket } from '../services/socket';
 import { useAuth } from '../state/AuthContext';
 import GameTable from '../components/GameTable';
-import type { RoomState } from '../types';
+import type { RoomState, GameState } from '../types';
 import styles from './GameRoom.module.css';
+
+const FUNNY_PHRASES = [
+  "Мама говорила, что покер - это математика. Она не знала про твои блефы.",
+  "Ушли красиво! Ну или хотя бы ушли.",
+  "Главное не победа, а вовремя унести ноги.",
+  "Фишки - пыль, главное - эмоции!",
+  "Казино всегда в выигрыше, но сегодня ты оказал сопротивление.",
+  "Твой внутренний Фил Айви гордится тобой.",
+  "Зато теперь можно спокойно попить чай."
+];
 
 export default function GameRoom() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -17,6 +27,38 @@ export default function GameRoom() {
   const [joinError, setJoinError] = useState('');
   const joined = useRef(false);
   const { token, user } = useAuth();
+
+  const [showExitPopup, setShowExitPopup] = useState(false);
+  const [stats, setStats] = useState({ initialChips: 0, currentChips: 0, gamesPlayed: 0, chipsWon: 0 });
+  const initializedStats = useRef(false);
+  const lastGameState = useRef<GameState | null>(null);
+  const randomPhrase = useRef(FUNNY_PHRASES[Math.floor(Math.random() * FUNNY_PHRASES.length)]);
+
+  useEffect(() => {
+    if (room?.gameContext?.state) {
+      if (room.gameContext.state === 'ROUND_END' && lastGameState.current !== 'ROUND_END') {
+        setStats(s => ({ ...s, gamesPlayed: s.gamesPlayed + 1 }));
+      }
+      lastGameState.current = room.gameContext.state;
+    }
+
+    if (room && myId) {
+      const me = room.players.find(p => p.id === myId);
+      if (me) {
+        if (!initializedStats.current) {
+          setStats(s => ({ ...s, initialChips: me.chips, currentChips: me.chips }));
+          initializedStats.current = true;
+        } else {
+          setStats(s => {
+            if (s.currentChips === me.chips) return s;
+            const diff = me.chips - s.currentChips;
+            const newChipsWon = diff > 0 ? s.chipsWon + diff : s.chipsWon;
+            return { ...s, currentChips: me.chips, chipsWon: newChipsWon };
+          });
+        }
+      }
+    }
+  }, [room, myId]);
 
   useEffect(() => {
     const handleConnect = () => setMyId(socket.id ?? null);
@@ -137,7 +179,7 @@ export default function GameRoom() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.back} onClick={() => navigate('/servers')}>
+        <button className={styles.back} onClick={() => setShowExitPopup(true)}>
           ← Назад
         </button>
         <h1 className={styles.title}>{room?.name ?? 'Покер'}</h1>
@@ -150,6 +192,51 @@ export default function GameRoom() {
           onStart={() => startGame(roomId)}
           onRestart={() => restartRound(roomId)}
         />
+      )}
+
+      {showExitPopup && (
+        <div className={styles.popupOverlay}>
+          <div className={styles.popupContent}>
+            <h2 className={styles.popupTitle}>Статистика игры</h2>
+            
+            <div className={styles.statsList}>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Сыграно партий:</span>
+                <span className={styles.statValue}>{stats.gamesPlayed}</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Выиграно фишек:</span>
+                <span className={`${styles.statValue} ${styles.positive}`}>+{stats.chipsWon}</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Изменение баланса:</span>
+                <span className={`${styles.statValue} ${stats.currentChips - stats.initialChips >= 0 ? styles.positive : styles.negative}`}>
+                  {stats.currentChips - stats.initialChips > 0 ? '+' : ''}{stats.currentChips - stats.initialChips}
+                </span>
+              </div>
+            </div>
+
+            <p className={styles.jokePhrase}>"{randomPhrase.current}"</p>
+
+            <div className={styles.popupButtons}>
+              <button 
+                className={styles.cancelExit} 
+                onClick={() => setShowExitPopup(false)}
+              >
+                Остаться
+              </button>
+              <button 
+                className={styles.confirmExit} 
+                onClick={() => {
+                  setShowExitPopup(false);
+                  navigate('/servers');
+                }}
+              >
+                Выйти
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
