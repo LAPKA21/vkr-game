@@ -103,7 +103,15 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email и пароль обязательны' });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ 
+      where: { email },
+      include: {
+        botMatches: {
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      }
+    });
 
     if (!user) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
@@ -135,6 +143,7 @@ router.post('/login', async (req: Request, res: Response) => {
         rating: user.rating,
         totalGamesPlayed: user.totalGamesPlayed,
         totalChipsWon: user.totalChipsWon,
+        botMatches: user.botMatches,
       }
     });
   } catch (error) {
@@ -152,7 +161,15 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Необходима авторизация' });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: userId },
+      include: {
+        botMatches: {
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      }
+    });
 
     if (!user) {
       return res.status(404).json({ error: 'Пользователь не найден' });
@@ -166,6 +183,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
       rating: user.rating,
       totalGamesPlayed: user.totalGamesPlayed,
       totalChipsWon: user.totalChipsWon,
+      botMatches: user.botMatches,
     });
   } catch (error) {
     console.error('Me endpoint error:', error);
@@ -211,15 +229,36 @@ router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Respons
       return res.status(401).json({ error: 'Необходима авторизация' });
     }
 
-    const { gamesPlayed, chipsWon } = req.body;
+    const { gamesPlayed, chipsWon, botMatch, botDifficulty, opponentStyle, botLogs } = req.body;
     
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
         totalGamesPlayed: { increment: gamesPlayed || 0 },
         totalChipsWon: { increment: chipsWon || 0 }
+      },
+      include: {
+        botMatches: {
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
       }
     });
+
+    if (botMatch && gamesPlayed > 0) {
+      const newBotMatch = await prisma.botMatchHistory.create({
+        data: {
+          userId,
+          botDifficulty: botDifficulty || 'NORMAL',
+          gamesPlayed: gamesPlayed || 0,
+          chipsWon: chipsWon || 0,
+          opponentStyle: opponentStyle || 'NORMAL',
+          botLogs: botLogs || []
+        }
+      });
+      user.botMatches.unshift(newBotMatch);
+      if (user.botMatches.length > 10) user.botMatches.pop();
+    }
 
     res.json({
       message: 'Статистика успешно сохранена',
@@ -231,6 +270,7 @@ router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Respons
         rating: user.rating,
         totalGamesPlayed: user.totalGamesPlayed,
         totalChipsWon: user.totalChipsWon,
+        botMatches: user.botMatches,
       }
     });
   } catch (error) {

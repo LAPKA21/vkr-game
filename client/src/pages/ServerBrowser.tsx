@@ -12,6 +12,7 @@ export default function ServerBrowser() {
   const [rooms, setRooms] = useState<RoomListItem[]>([]);
   const [creating, setCreating] = useState(false);
   const [createName, setCreateName] = useState('');
+  const [createError, setCreateError] = useState('');
   const location = useLocation();
   const postGameStats = location.state?.postGameStats as PostGameStats | undefined;
 
@@ -36,9 +37,23 @@ export default function ServerBrowser() {
   }, [navigate]);
 
   const handleCreate = () => {
-    if (!createName.trim()) return;
+    const trimmed = createName.trim();
+    if (!trimmed) return;
+
+    if (trimmed.length > 20) {
+      setCreateError('Максимальная длина названия — 20 символов');
+      return;
+    }
+
+    const isValid = /^[a-zA-Zа-яА-ЯёЁ0-9\s]+$/.test(trimmed);
+    if (!isValid) {
+      setCreateError('Разрешены только буквы, цифры и пробелы');
+      return;
+    }
+
+    setCreateError('');
     setCreating(true);
-    createRoom(createName.trim());
+    createRoom(trimmed);
   };
 
   const handleJoin = (roomId: string) => {
@@ -59,13 +74,22 @@ export default function ServerBrowser() {
           type="text"
           placeholder="Название комнаты"
           value={createName}
-          onChange={(e) => setCreateName(e.target.value)}
+          onChange={(e) => {
+            setCreateName(e.target.value);
+            setCreateError('');
+          }}
           onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+          maxLength={20}
         />
         <button onClick={handleCreate} disabled={creating || !createName.trim()}>
           {creating ? 'Создание…' : 'Создать игровую комнату'}
         </button>
       </div>
+      {createError && (
+        <div style={{ color: '#ef4444', marginBottom: '1.5rem', marginTop: '-1rem' }}>
+          {createError}
+        </div>
+      )}
       <div className={styles.list}>
         <h2>Доступные комнаты</h2>
         {rooms.length === 0 ? (

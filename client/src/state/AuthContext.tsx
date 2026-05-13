@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface User {
+export interface BotMatchHistory {
+  id: string;
+  botDifficulty: string;
+  gamesPlayed: number;
+  chipsWon: number;
+  opponentStyle: string;
+  botLogs: string[];
+  createdAt: string;
+}
+
+export interface User {
   id: string;
   email: string;
   username: string;
@@ -8,6 +18,7 @@ interface User {
   rating: number;
   totalGamesPlayed?: number;
   totalChipsWon?: number;
+  botMatches?: BotMatchHistory[];
 }
 
 interface AuthContextType {
@@ -16,7 +27,7 @@ interface AuthContextType {
   login: (user: User, token: string) => void;
   logout: () => void;
   addChips: (amount?: number) => Promise<void>;
-  saveStats: (stats: { gamesPlayed: number, chipsWon: number }) => Promise<void>;
+  saveStats: (stats: { gamesPlayed: number, chipsWon: number, botMatch?: boolean, botDifficulty?: string, opponentStyle?: string, botLogs?: string[] }) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -85,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const saveStats = async (stats: { gamesPlayed: number, chipsWon: number }) => {
+  const saveStats = async (stats: { gamesPlayed: number, chipsWon: number, botMatch?: boolean, botDifficulty?: string, opponentStyle?: string, botLogs?: string[] }) => {
     if (!token || !user) return;
     try {
       const res = await fetch('/api/auth/save-stats', {

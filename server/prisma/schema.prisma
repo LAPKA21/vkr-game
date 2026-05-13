@@ -23,5 +23,18 @@ model User {
   rating             Int      @default(1000)
   totalGamesPlayed   Int      @default(0)
   totalChipsWon      Int      @default(0)
+  botMatches         BotMatchHistory[]
   createdAt          DateTime @default(now())
+}
+
+model BotMatchHistory {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  botDifficulty  String
+  gamesPlayed    Int
+  chipsWon       Int
+  opponentStyle  String
+  botLogs        String[]
+  createdAt      DateTime @default(now())
 }

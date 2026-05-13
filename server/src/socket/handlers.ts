@@ -46,6 +46,7 @@ export function registerSocketHandlers(io: Server): void {
       const difficulty = typeof data === 'object' && data?.difficulty ? data.difficulty : 'NORMAL';
 
       const room = createRoom(name || 'Обучение с ботом', true);
+      room.botDifficulty = difficulty;
       trainingGameService.setBotDifficulty(room.id, difficulty);
 
       socket.emit('room:created', {

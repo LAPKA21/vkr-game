@@ -25,7 +25,14 @@ export default function TrainingRoom() {
   const handleExit = async () => {
     if (stats.gamesPlayed > 0 || stats.chipsWon > 0 || stats.currentChips !== stats.initialChips) {
       if (user) {
-        saveStats({ gamesPlayed: stats.gamesPlayed, chipsWon: stats.chipsWon });
+        saveStats({ 
+          gamesPlayed: stats.gamesPlayed, 
+          chipsWon: stats.chipsWon,
+          botMatch: true,
+          botDifficulty: room?.botDifficulty,
+          opponentStyle: room?.opponentStyle,
+          botLogs: room?.botLogs
+        });
       }
       navigate('/', { state: { postGameStats: stats } });
     } else {

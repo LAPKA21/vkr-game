@@ -81,5 +81,7 @@ export interface Room {
   gameContext: GameContext;
   deck: Card[];
   isTraining?: boolean;
+  botDifficulty?: string;
+  opponentStyle?: string;
   botLogs?: string[];
 }

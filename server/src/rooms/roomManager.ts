@@ -559,6 +559,8 @@ export function serializeRoom(room: Room): Record<string, unknown> {
     roomId: room.id,
     name: room.name,
     isTraining: room.isTraining,
+    botDifficulty: room.botDifficulty,
+    opponentStyle: room.opponentStyle,
     players: room.players.map((p) => {
       let currentHandStrength;
       let currentHandNameRu;

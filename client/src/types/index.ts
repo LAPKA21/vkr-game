@@ -55,6 +55,8 @@ export interface RoomState {
   roomId: string;
   name: string;
   isTraining?: boolean;
+  botDifficulty?: string;
+  opponentStyle?: string;
   players: Player[];
   gameContext: GameContext;
   winners?: number[];

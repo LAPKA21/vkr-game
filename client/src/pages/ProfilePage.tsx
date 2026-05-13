@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../state/AuthContext';
+import { useAuth, User } from '../state/AuthContext';
 import './AuthPages.css';
 
 const getRankName = (rating: number) => {
@@ -10,9 +10,36 @@ const getRankName = (rating: number) => {
   return 'Грандмастер';
 };
 
+const getRecommendation = (user: User) => {
+  if (!user.botMatches || user.botMatches.length === 0) {
+    return "Сыграйте с ботом уровня EASY, чтобы мы могли оценить ваш навык.";
+  }
+  const lastMatch = user.botMatches[0];
+  const { botDifficulty, chipsWon, gamesPlayed } = lastMatch;
+  if (gamesPlayed === 0) return "Сыграйте хотя бы одну партию до конца.";
+  
+  if (botDifficulty === 'EASY' && chipsWon > 0) {
+    return "Отлично! Вы победили новичка. Рекомендуем перейти на уровень NORMAL.";
+  }
+  if (botDifficulty === 'EASY' && chipsWon <= 0) {
+    return "Продолжайте тренировки на уровне EASY, пока не начнете стабильно выигрывать.";
+  }
+  if (botDifficulty === 'NORMAL' && chipsWon > 0) {
+    return "Вы отлично справляетесь с обычным ботом. Пора бросить вызов профи (уровень HARD)!";
+  }
+  if (botDifficulty === 'NORMAL' && chipsWon <= 0) {
+    return "Обычный бот оказался не прост. Попробуйте еще раз или спуститесь на EASY.";
+  }
+  if (botDifficulty === 'HARD' && chipsWon > 0) {
+    return "Вы мастер! Вы обыграли профи-бота. Вы готовы к онлайн-игре с реальными людьми!";
+  }
+  return "Тренировка с профи — отличная практика. Продолжайте в том же духе!";
+}
+
 const ProfilePage: React.FC = () => {
   const { user, logout, addChips, isLoading } = useAuth();
-  const [isAdding, setIsAdding] = React.useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -72,6 +99,60 @@ const ProfilePage: React.FC = () => {
             <div style={{ fontSize: '1.5rem', color: '#4ade80', fontWeight: 'bold' }}>{user.totalChipsWon ?? 0}</div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Всего выиграно</div>
           </div>
+        </div>
+
+        <h4 style={{ color: '#fff', margin: '0 0 0.5rem 0.5rem' }}>Аналитика игры с ИИ</h4>
+        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontStyle: 'italic', fontSize: '0.9rem' }}>
+            💡 Совет: {getRecommendation(user)}
+          </p>
+          
+          {user.botMatches && user.botMatches.length > 0 ? (
+            <div>
+              <h5 style={{ color: '#fff', margin: '0 0 0.5rem 0' }}>Последняя игра</h5>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Сложность:</span>
+                <span style={{ color: 'var(--accent-gold)' }}>{user.botMatches[0].botDifficulty}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Выявленный стиль (ваш):</span>
+                <span style={{ color: '#4ade80' }}>
+                  {user.botMatches[0].opponentStyle === 'AGGRESSIVE' ? 'Агрессор' : 
+                   user.botMatches[0].opponentStyle === 'TIGHT' ? 'Осторожный' : 'Нормальный'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Сыграно партий:</span>
+                <span style={{ color: '#fff' }}>{user.botMatches[0].gamesPlayed}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Изменение баланса:</span>
+                <span style={{ color: user.botMatches[0].chipsWon >= 0 ? '#4ade80' : '#ef4444' }}>
+                  {user.botMatches[0].chipsWon > 0 ? '+' : ''}{user.botMatches[0].chipsWon}
+                </span>
+              </div>
+              
+              {user.botMatches[0].botLogs && user.botMatches[0].botLogs.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <button 
+                    onClick={() => setExpandedLogId(expandedLogId === user.botMatches![0].id ? null : user.botMatches![0].id)}
+                    style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '0.5rem', width: '100%', borderRadius: '4px', cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    {expandedLogId === user.botMatches[0].id ? 'Скрыть логи бота' : 'Показать логи бота (размышления)'}
+                  </button>
+                  {expandedLogId === user.botMatches[0].id && (
+                    <div style={{ background: 'rgba(0,0,0,0.5)', padding: '0.5rem', marginTop: '0.5rem', borderRadius: '4px', maxHeight: '200px', overflowY: 'auto', fontSize: '0.8rem', color: '#ccc' }}>
+                      {user.botMatches[0].botLogs.map((log, idx) => (
+                        <div key={idx} style={{ marginBottom: '0.2rem' }}>{log}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Нет данных о играх с ботом.</p>
+          )}
         </div>
 
         <div style={{ marginBottom: '2rem', textAlign: 'center' }}>

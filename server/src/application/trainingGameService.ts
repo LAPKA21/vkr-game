@@ -142,6 +142,7 @@ export class TrainingGameService {
       
       const actionRu = actionRuMap[finalAction] || finalAction;
       const currentStyle = bot.getOpponentStyle();
+      room.opponentStyle = currentStyle;
       const styleDesc = currentStyle === 'AGGRESSIVE' ? 'Агрессор' : currentStyle === 'TIGHT' ? 'Осторожный' : 'Нормальный';
       
       const logEntry = `[${new Date().toLocaleTimeString('ru-RU')}] Этап: ${stageRu}. Сила руки: ${handRu} (${strengthStr}). Стиль оппонента: ${styleDesc}. Действие: ${actionRu}`;
