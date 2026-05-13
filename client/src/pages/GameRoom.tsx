@@ -16,7 +16,7 @@ export default function GameRoom() {
   const [playerName, setPlayerName] = useState('');
   const [joinError, setJoinError] = useState('');
   const joined = useRef(false);
-  const { token, user, saveStats } = useAuth();
+  const { user, saveStats } = useAuth();
 
   const [stats, setStats] = useState({ initialChips: 0, currentChips: 0, gamesPlayed: 0, chipsWon: 0 });
   const initializedStats = useRef(false);
