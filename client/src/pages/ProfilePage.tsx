@@ -42,7 +42,7 @@ const getRecommendation = (user: User) => {
 }
 
 const ProfilePage: React.FC = () => {
-  const { user, logout, addChips, isLoading } = useAuth();
+  const { user, logout, addChips, updateSettings, isLoading } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -107,6 +107,19 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
 
+        <h4 style={{ color: '#fff', margin: '0 0 0.5rem 0.5rem' }}>Настройки</h4>
+        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#fff' }}>
+            <input 
+              type="checkbox" 
+              checked={user.showHints ?? true} 
+              onChange={(e) => updateSettings({ showHints: e.target.checked })}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)' }}
+            />
+            Показывать подсказки комбинаций в игре
+          </label>
+        </div>
+
         <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
           <button 
             className="btn-primary" 
@@ -140,7 +153,7 @@ const ProfilePage: React.FC = () => {
 
         </div>
 
-        <div className="auth-card" style={{ width: '100%', maxWidth: '600px', flex: '1 1 500px' }}>
+        <div className="auth-card" style={{ width: '100%', maxWidth: '500px', flex: '1 1 400px' }}>
           <h2 className="auth-title">Аналитика с ИИ</h2>
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontStyle: 'italic', fontSize: '0.9rem' }}>

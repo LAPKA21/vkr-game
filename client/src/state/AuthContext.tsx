@@ -18,6 +18,7 @@ export interface User {
   rating: number;
   totalGamesPlayed?: number;
   totalChipsWon?: number;
+  showHints?: boolean;
   botMatches?: BotMatchHistory[];
 }
 
@@ -28,6 +29,7 @@ interface AuthContextType {
   logout: () => void;
   addChips: (amount?: number) => Promise<void>;
   saveStats: (stats: { gamesPlayed: number, chipsWon: number, botMatch?: boolean, botDifficulty?: string, opponentStyle?: string, botLogs?: string[] }) => Promise<void>;
+  updateSettings: (settings: { showHints: boolean }) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -115,8 +117,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateSettings = async (settings: { showHints: boolean }) => {
+    if (!token || !user) return;
+    try {
+      const res = await fetch('/api/auth/update-settings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(settings)
+      });
+      if (!res.ok) throw new Error('Ошибка обновления настроек');
+      const data = await res.json();
+      setUser({ ...user, showHints: data.showHints });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, addChips, saveStats, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, addChips, saveStats, updateSettings, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

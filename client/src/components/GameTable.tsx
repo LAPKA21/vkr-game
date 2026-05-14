@@ -3,6 +3,7 @@ import Confetti from 'react-confetti';
 import { addGameChips } from '../services/socket';
 import Card from './Card';
 import { getStateLabel } from '../state/gameStateMachine';
+import { useAuth } from '../state/AuthContext';
 import type { RoomState } from '../types';
 import styles from './GameTable.module.css';
 
@@ -26,8 +27,10 @@ interface Props {
 }
 
 export default function GameTable({ room, myId, onAction, onStart, onRestart }: Props) {
+  const { user } = useAuth();
   const [raiseAmount, setRaiseAmount] = useState(room.gameContext.minRaise ?? room.gameContext.bigBlind);
   const [showHint, setShowHint] = useState(false);
+  const showHintsEnabled = user?.showHints ?? true;
   const ctx = room.gameContext;
   const players = room.players;
   const myIndex = players.findIndex((p) => p.id === myId);
@@ -175,7 +178,7 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
           ))}
         </div>
 
-        {isMe && p.cards.length >= 2 && p.currentHandNameRu && (
+        {isMe && p.cards.length >= 2 && p.currentHandNameRu && showHintsEnabled && (
           <div className={styles.hintContainer}>
             {showHint && (
               <div className={`${styles.hintText} ${styles[`strength-${p.currentHandStrength || 'WEAK'}`]}`}>

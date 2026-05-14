@@ -143,6 +143,7 @@ router.post('/login', async (req: Request, res: Response) => {
         rating: user.rating,
         totalGamesPlayed: user.totalGamesPlayed,
         totalChipsWon: user.totalChipsWon,
+        showHints: user.showHints,
         botMatches: user.botMatches,
       }
     });
@@ -183,6 +184,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
       rating: user.rating,
       totalGamesPlayed: user.totalGamesPlayed,
       totalChipsWon: user.totalChipsWon,
+      showHints: user.showHints,
       botMatches: user.botMatches,
     });
   } catch (error) {
@@ -270,12 +272,41 @@ router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Respons
         rating: user.rating,
         totalGamesPlayed: user.totalGamesPlayed,
         totalChipsWon: user.totalChipsWon,
+        showHints: user.showHints,
         botMatches: user.botMatches,
       }
     });
   } catch (error) {
     console.error('Save stats error:', error);
     res.status(500).json({ error: 'Ошибка сервера при сохранении статистики' });
+  }
+});
+
+// Обновление настроек
+router.post('/update-settings', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Необходима авторизация' });
+    }
+
+    const { showHints } = req.body;
+    
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        showHints: showHints !== undefined ? Boolean(showHints) : undefined,
+      }
+    });
+
+    res.json({
+      message: 'Настройки успешно обновлены',
+      showHints: user.showHints
+    });
+  } catch (error) {
+    console.error('Update settings error:', error);
+    res.status(500).json({ error: 'Ошибка сервера при обновлении настроек' });
   }
 });
 

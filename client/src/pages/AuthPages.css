@@ -148,14 +148,17 @@
 
 .history-slider {
   display: flex;
-  overflow-x: auto;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
   gap: 1rem;
-  padding-bottom: 1rem;
-  scroll-snap-type: x mandatory;
+  padding-right: 0.5rem;
+  scroll-snap-type: y mandatory;
+  max-height: 400px;
 }
 
 .history-card {
-  flex: 0 0 280px;
+  flex: 0 0 auto;
   background: rgba(0, 0, 0, 0.4);
   padding: 1rem;
   border-radius: 12px;
@@ -164,7 +167,7 @@
 }
 
 .history-slider::-webkit-scrollbar {
-  height: 6px;
+  width: 6px;
 }
 .history-slider::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.2);
