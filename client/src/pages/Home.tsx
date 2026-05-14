@@ -137,9 +137,6 @@ export default function Home() {
               <source src="/how-to-play-placeholder.mp4" type="video/mp4" />
               Ваш браузер не поддерживает видео.
             </video>
-            <p style={{ textAlign: 'center', marginTop: '1rem', color: '#ccc', fontSize: '0.9rem' }}>
-              *Замените файл <code>how-to-play-placeholder.mp4</code> в папке <code>client/public</code> на свой
-            </p>
           </div>
         </div>
       )}
