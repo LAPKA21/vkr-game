@@ -107,6 +107,37 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
 
+        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+          <button 
+            className="btn-primary" 
+            style={{ 
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+              color: 'white', 
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+              width: '100%',
+              padding: '1rem',
+              fontSize: '1.1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}
+            disabled={isAdding}
+            onClick={async () => {
+              setIsAdding(true);
+              await addChips(1000);
+              setIsAdding(false);
+            }}
+          >
+            {isAdding ? 'Начисление...' : '🎁 Получить бесплатные фишки (+1000)'}
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn-primary" style={{ flex: 1 }} onClick={() => navigate('/')}>На главную</button>
+          <button className="btn-primary" style={{ flex: 1, background: 'rgba(220, 53, 69, 0.2)', color: '#ff8795' }} onClick={handleLogout}>Выйти</button>
+        </div>
+
         </div>
 
         <div className="auth-card" style={{ width: '100%', maxWidth: '600px', flex: '1 1 500px' }}>
