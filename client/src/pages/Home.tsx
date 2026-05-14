@@ -8,6 +8,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [botDifficulty, setBotDifficulty] = useState('NORMAL');
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const location = useLocation();
   const postGameStats = location.state?.postGameStats as PostGameStats | undefined;
 
@@ -50,9 +51,12 @@ export default function Home() {
                 <select className={styles.select} disabled>
                   <option>Бот: Обычный (NORMAL)</option>
                 </select>
-                <button className={styles.secondary} disabled>
-                  Обучение с ботом
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                  <button className={styles.secondary} disabled style={{ flex: 1 }}>
+                    Обучение с ботом
+                  </button>
+                  <button className={styles.helpBtn} disabled>?</button>
+                </div>
               </div>
             </>
           ) : (
@@ -74,29 +78,39 @@ export default function Home() {
                   <option value="NORMAL">Бот: Обычный (NORMAL)</option>
                   <option value="HARD">Бот: Профи (HARD)</option>
                 </select>
-                <button
-                  className={styles.secondary}
-                  onClick={() => {
-                    const name = user?.username || 'Игрок';
+                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                  <button
+                    className={styles.secondary}
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      const name = user?.username || 'Игрок';
 
-                    import('../services/socket').then(({ createTrainingRoom, on, off }) => {
-                      const handler = (data: {
-                        roomId: string;
-                        name?: string;
-                      }) => {
-                        console.log('Training room created:', data);
-                        off('room:created', handler);
-                        if (data.roomId) {
-                          navigate(`/training/${data.roomId}`, { state: { playerName: name.trim() } });
-                        }
-                      };
-                      on('room:created', handler);
-                      createTrainingRoom('Обучение с ботом', botDifficulty);
-                    });
-                  }}
-                >
-                  Обучение с ботом
-                </button>
+                      import('../services/socket').then(({ createTrainingRoom, on, off }) => {
+                        const handler = (data: {
+                          roomId: string;
+                          name?: string;
+                        }) => {
+                          console.log('Training room created:', data);
+                          off('room:created', handler);
+                          if (data.roomId) {
+                            navigate(`/training/${data.roomId}`, { state: { playerName: name.trim() } });
+                          }
+                        };
+                        on('room:created', handler);
+                        createTrainingRoom('Обучение с ботом', botDifficulty);
+                      });
+                    }}
+                  >
+                    Обучение с ботом
+                  </button>
+                  <button 
+                    className={styles.helpBtn}
+                    onClick={() => setIsVideoOpen(true)}
+                    title="Как играть?"
+                  >
+                    ?
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -114,6 +128,21 @@ export default function Home() {
         </div>
       )}
       <div className={styles.decor} aria-hidden />
+
+      {isVideoOpen && (
+        <div className={styles.videoModal} onClick={() => setIsVideoOpen(false)}>
+          <div className={styles.videoContainer} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeVideoBtn} onClick={() => setIsVideoOpen(false)}>✕</button>
+            <video controls width="100%" height="auto" style={{ borderRadius: '8px' }}>
+              <source src="/how-to-play-placeholder.mp4" type="video/mp4" />
+              Ваш браузер не поддерживает видео.
+            </video>
+            <p style={{ textAlign: 'center', marginTop: '1rem', color: '#ccc', fontSize: '0.9rem' }}>
+              *Замените файл <code>how-to-play-placeholder.mp4</code> в папке <code>client/public</code> на свой
+            </p>
+          </div>
+        </div>
+      )}
 
       {postGameStats && <PostGamePopup stats={postGameStats} onClose={closePopup} />}
     </div>

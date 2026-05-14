@@ -135,3 +135,42 @@
   color: #f7d457;
   text-decoration: none;
 }
+
+.profile-wrapper {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.history-slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+}
+
+.history-card {
+  flex: 0 0 280px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+  border-radius: 12px;
+  scroll-snap-align: start;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-slider::-webkit-scrollbar {
+  height: 6px;
+}
+.history-slider::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+.history-slider::-webkit-scrollbar-thumb {
+  background: var(--accent-gold);
+  border-radius: 3px;
+}

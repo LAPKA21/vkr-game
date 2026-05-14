@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Confetti from 'react-confetti';
 import { addGameChips } from '../services/socket';
 import Card from './Card';
 import { getStateLabel } from '../state/gameStateMachine';
@@ -51,6 +52,11 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
   const hasShowdownWinners = Array.isArray(room.winners) && room.winners.length > 0;
   const winnerHands = room.winnerHands ?? [];
 
+  const isLegendaryWin = ctx.state === 'ROUND_END' && hasShowdownWinners && 
+    winnerHands.some(w => w.handType === 'quads' || w.handType === 'straightflush');
+
+  const { innerWidth: width, innerHeight: height } = window;
+
   return (
     <div className={styles.table}>
       <div className={styles.stateBar}>
@@ -58,6 +64,12 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
         <span className={styles.pot}>Банк: {ctx.pot}</span>
         {ctx.turnEndsAt && isMyTurn && <TurnTimer endsAt={ctx.turnEndsAt} />}
       </div>
+
+      {isLegendaryWin && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999, pointerEvents: 'none' }}>
+          <Confetti width={width} height={height} numberOfPieces={300} gravity={0.15} />
+        </div>
+      )}
 
       {ctx.state === 'ROUND_END' && (
         <div className={styles.winnerBanner}>
@@ -92,6 +104,7 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
     const isMe = p.id === myId;
     const isDealer = ctx.dealerIndex === players.indexOf(p);
     const isCurrent = ctx.currentPlayerIndex === players.indexOf(p);
+    const isLegendaryWinner = isLegendaryWin && room.winners?.includes(index);
 
     const SEAT_POSITIONS: React.CSSProperties[] = [
       { bottom: '110px', left: '35%', transform: 'translateX(-50%)' }, // 0: User Bottom Left-ish
@@ -111,7 +124,8 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
         className={`${styles.player} 
         ${isMe ? styles.me : ''} 
         ${p.folded ? styles.folded : ''} 
-        ${isCurrent ? styles.current : ''}`}
+        ${isCurrent ? styles.current : ''}
+        ${isLegendaryWinner ? styles.legendaryWinner : ''}`}
         style={pos}
       >
         <div className={styles.playerInfo}>
