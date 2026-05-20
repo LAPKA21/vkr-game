@@ -10,6 +10,13 @@ export interface BotMatchHistory {
   createdAt: string;
 }
 
+export interface UserAchievement {
+  id: string;
+  userId: string;
+  key: string;
+  unlockedAt: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -20,6 +27,7 @@ export interface User {
   totalChipsWon?: number;
   showHints?: boolean;
   botMatches?: BotMatchHistory[];
+  achievements?: UserAchievement[];
 }
 
 interface AuthContextType {

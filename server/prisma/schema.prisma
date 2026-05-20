@@ -25,6 +25,7 @@ model User {
   totalChipsWon      Int      @default(0)
   showHints          Boolean  @default(true)
   botMatches         BotMatchHistory[]
+  achievements       UserAchievement[]
   createdAt          DateTime @default(now())
 }
 
@@ -38,4 +39,14 @@ model BotMatchHistory {
   opponentStyle  String
   botLogs        String[]
   createdAt      DateTime @default(now())
+}
+
+model UserAchievement {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  key         String
+  unlockedAt  DateTime @default(now())
+
+  @@unique([userId, key])
 }

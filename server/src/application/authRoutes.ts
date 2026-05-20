@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db.js';
 import { authMiddleware, AuthRequest } from './auth.middleware.js';
 import { sendVerificationEmail } from '../utils/mailer.js';
+import { checkAndAwardStatsAchievements, checkAndAwardCombinationAchievements } from './achievementService.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-me-in-production';
@@ -109,7 +110,8 @@ router.post('/login', async (req: Request, res: Response) => {
         botMatches: {
           orderBy: { createdAt: 'desc' },
           take: 10
-        }
+        },
+        achievements: true
       }
     });
 
@@ -145,6 +147,7 @@ router.post('/login', async (req: Request, res: Response) => {
         totalChipsWon: user.totalChipsWon,
         showHints: user.showHints,
         botMatches: user.botMatches,
+        achievements: user.achievements,
       }
     });
   } catch (error) {
@@ -168,7 +171,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
         botMatches: {
           orderBy: { createdAt: 'desc' },
           take: 10
-        }
+        },
+        achievements: true
       }
     });
 
@@ -186,6 +190,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
       totalChipsWon: user.totalChipsWon,
       showHints: user.showHints,
       botMatches: user.botMatches,
+      achievements: user.achievements,
     });
   } catch (error) {
     console.error('Me endpoint error:', error);
@@ -212,6 +217,8 @@ router.post('/add-chips', authMiddleware, async (req: AuthRequest, res: Response
       }
     });
 
+    await checkAndAwardStatsAchievements(userId);
+
     res.json({
       message: 'Фишки успешно начислены',
       chips: user.chips
@@ -231,24 +238,18 @@ router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Respons
       return res.status(401).json({ error: 'Необходима авторизация' });
     }
 
-    const { gamesPlayed, chipsWon, botMatch, botDifficulty, opponentStyle, botLogs } = req.body;
+    const { gamesPlayed, chipsWon, botMatch, botDifficulty, opponentStyle, botLogs, bestCombination } = req.body;
     
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: {
         totalGamesPlayed: { increment: gamesPlayed || 0 },
         totalChipsWon: { increment: chipsWon || 0 }
-      },
-      include: {
-        botMatches: {
-          orderBy: { createdAt: 'desc' },
-          take: 10
-        }
       }
     });
 
     if (botMatch && gamesPlayed > 0) {
-      const newBotMatch = await prisma.botMatchHistory.create({
+      await prisma.botMatchHistory.create({
         data: {
           userId,
           botDifficulty: botDifficulty || 'NORMAL',
@@ -258,8 +259,27 @@ router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Respons
           botLogs: botLogs || []
         }
       });
-      user.botMatches.unshift(newBotMatch);
-      if (user.botMatches.length > 10) user.botMatches.pop();
+    }
+
+    if (bestCombination) {
+      await checkAndAwardCombinationAchievements(userId, bestCombination);
+    }
+
+    await checkAndAwardStatsAchievements(userId);
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        botMatches: {
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        },
+        achievements: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
     }
 
     res.json({
@@ -274,6 +294,7 @@ router.post('/save-stats', authMiddleware, async (req: AuthRequest, res: Respons
         totalChipsWon: user.totalChipsWon,
         showHints: user.showHints,
         botMatches: user.botMatches,
+        achievements: user.achievements,
       }
     });
   } catch (error) {

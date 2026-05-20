@@ -41,9 +41,48 @@ const getRecommendation = (user: User) => {
   return "Тренируйтесь и улучшайте свои навыки!";
 }
 
+interface AchievementDef {
+  key: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: 'combinations' | 'rounds' | 'ranks' | 'chips';
+}
+
+const ACHIEVEMENTS_LIST: AchievementDef[] = [
+  // Combinations (Сбор комбинаций)
+  { key: 'comb_pair', title: 'Первая пара', description: 'Соберите комбинацию Пара', icon: '🤝', category: 'combinations' },
+  { key: 'comb_twopair', title: 'Две пары', description: 'Соберите комбинацию Две пары', icon: '✌️', category: 'combinations' },
+  { key: 'comb_trips', title: 'Тройной удар', description: 'Соберите сет (тройку)', icon: '🎯', category: 'combinations' },
+  { key: 'comb_straight', title: 'Порядок во всём', description: 'Соберите стрит', icon: '📈', category: 'combinations' },
+  { key: 'comb_flush', title: 'Одноцветный мир', description: 'Соберите флеш', icon: '🌈', category: 'combinations' },
+  { key: 'comb_fullhouse', title: 'Полный дом', description: 'Соберите фулл-хаус', icon: '🏡', category: 'combinations' },
+  { key: 'comb_quads', title: 'Каре!', description: 'Соберите каре', icon: '👑', category: 'combinations' },
+  { key: 'comb_straightflush', title: 'Чистый блеск', description: 'Соберите стрит-флеш', icon: '⚡', category: 'combinations' },
+  { key: 'comb_royalflush', title: 'Королевский флеш', description: 'Соберите легендарный Роял-флеш!', icon: '💎', category: 'combinations' },
+
+  // Rounds (Раунды)
+  { key: 'rounds_10', title: 'Покерный дебют', description: 'Сыграйте 10 раундов в игре', icon: '🃏', category: 'rounds' },
+  { key: 'rounds_50', title: 'Завсегдатай клуба', description: 'Сыграйте 50 раундов в игре', icon: '🕶️', category: 'rounds' },
+  { key: 'rounds_100', title: 'Акула покера', description: 'Сыграйте 100 раундов в игре', icon: '🦈', category: 'rounds' },
+
+  // Ranks (Ранги)
+  { key: 'rank_amateur', title: 'Серьёзный любитель', description: 'Достигните рейтинга 1000+', icon: '🥉', category: 'ranks' },
+  { key: 'rank_pro', title: 'Настоящий профи', description: 'Достигните рейтинга 1200+', icon: '🥈', category: 'ranks' },
+  { key: 'rank_grandmaster', title: 'Великий гроссмейстер', description: 'Достигните рейтинга 1500+', icon: '🥇', category: 'ranks' },
+  { key: 'rank_legend', title: 'Легенда покера', description: 'Достигните рейтинга 1800+', icon: '🏆', category: 'ranks' },
+
+  // Chips (Скопленные фишки)
+  { key: 'chips_5k', title: 'Начальный капитал', description: 'Накопите баланс в 5 000 фишек', icon: '💰', category: 'chips' },
+  { key: 'chips_25k', title: 'Успешный игрок', description: 'Накопите баланс в 25 000 фишек', icon: '💼', category: 'chips' },
+  { key: 'chips_100k', title: 'Золотой сейф', description: 'Накопите баланс в 100 000 фишек', icon: '🏦', category: 'chips' },
+  { key: 'chips_1m', title: 'Покерный олигарх', description: 'Накопите баланс в 1 000 000 фишек!', icon: '💸', category: 'chips' },
+];
+
 const ProfilePage: React.FC = () => {
   const { user, logout, addChips, updateSettings, isLoading } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'combinations' | 'rounds' | 'ranks' | 'chips'>('all');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -214,6 +253,72 @@ const ProfilePage: React.FC = () => {
             )}
           </div>
         </div>
+
+        <div className="auth-card" style={{ width: '100%', maxWidth: '1020px', flex: '1 1 100%', marginTop: '1rem' }}>
+          <h2 className="auth-title" style={{ marginBottom: '1.5rem' }}>🏆 Ваши достижения</h2>
+          
+          <div className="achievements-tabs">
+            <button 
+              className={`achievement-tab ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              Все ({user.achievements?.length ?? 0}/{ACHIEVEMENTS_LIST.length})
+            </button>
+            <button 
+              className={`achievement-tab ${activeTab === 'combinations' ? 'active' : ''}`}
+              onClick={() => setActiveTab('combinations')}
+            >
+              🃏 Комбинации
+            </button>
+            <button 
+              className={`achievement-tab ${activeTab === 'rounds' ? 'active' : ''}`}
+              onClick={() => setActiveTab('rounds')}
+            >
+              🔄 Активность
+            </button>
+            <button 
+              className={`achievement-tab ${activeTab === 'ranks' ? 'active' : ''}`}
+              onClick={() => setActiveTab('ranks')}
+            >
+              📈 Рейтинг
+            </button>
+            <button 
+              className={`achievement-tab ${activeTab === 'chips' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chips')}
+            >
+              💰 Фишки
+            </button>
+          </div>
+
+          <div className="achievements-grid">
+            {ACHIEVEMENTS_LIST.filter(
+              (ach) => activeTab === 'all' || ach.category === activeTab
+            ).map((ach) => {
+              const unlocked = user.achievements?.find((ua) => ua.key === ach.key);
+              return (
+                <div 
+                  key={ach.key} 
+                  className={`achievement-card ${unlocked ? 'unlocked' : 'locked'}`}
+                >
+                  <div className="achievement-icon">{ach.icon}</div>
+                  <h4 className="achievement-card-title">{ach.title}</h4>
+                  <p className="achievement-card-desc">{ach.description}</p>
+                  
+                  {unlocked ? (
+                    <span className="achievement-date">
+                      🎉 Получено {new Date(unlocked.unlockedAt).toLocaleDateString('ru-RU')}
+                    </span>
+                  ) : (
+                    <span className="achievement-lock-badge">
+                      🔒 Заблокировано
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
     </div>
   );

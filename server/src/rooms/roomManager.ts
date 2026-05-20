@@ -13,6 +13,7 @@ import { getWinnerIndices, compareHandRanks, type HandRankType } from '../game/p
 import { trainingGameService } from '../application/trainingGameService.js';
 import { evaluateHandStrength } from '../domain/bot/handStrengthEvaluator.js';
 import { prisma } from '../db.js';
+import { checkAndAwardStatsAchievements, checkAndAwardCombinationAchievements } from '../application/achievementService.js';
 
 const SMALL_BLIND = 10;
 const BIG_BLIND = 20;
@@ -185,7 +186,9 @@ function syncRoomDbChips(room: Room) {
       prisma.user.update({
         where: { id: p.dbUserId },
         data: { chips: p.chips }
-      }).catch(err => console.error('Error syncing chips:', err));
+      })
+      .then(() => checkAndAwardStatsAchievements(p.dbUserId!))
+      .catch(err => console.error('Error syncing chips:', err));
     }
   }
 }
@@ -206,7 +209,9 @@ function updateRatings(room: Room, winners: number[]) {
       prisma.user.update({
         where: { id: p.dbUserId },
         data: { rating: { increment: ratingChange } }
-      }).catch(err => console.error('Error updating rating:', err));
+      })
+      .then(() => checkAndAwardStatsAchievements(p.dbUserId!))
+      .catch(err => console.error('Error updating rating:', err));
     }
   }
 }
@@ -495,6 +500,18 @@ function doShowdown(room: Room): number[] {
     folded: p.folded,
     rank: p.folded ? undefined : evaluateHand(p.cards, room.gameContext.communityCards)
   }));
+
+  // Начисляем достижения за собранные комбинации реальным игрокам на вскрытии (showdown)
+  for (const p of players) {
+    if (!p.folded && p.rank) {
+      const realPlayer = room.players[p.index];
+      if (realPlayer.dbUserId) {
+        const highCardValue = 'high' in p.rank ? (p.rank as any).high : undefined;
+        checkAndAwardCombinationAchievements(realPlayer.dbUserId, p.rank.type, highCardValue)
+          .catch(err => console.error('Error awarding combination achievement at showdown:', err));
+      }
+    }
+  }
 
   const uniqueInvested = Array.from(new Set(players.filter(p => p.invested > 0).map(p => p.invested))).sort((a, b) => a - b);
   let currentInvestedLevel = 0;
