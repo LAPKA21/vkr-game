@@ -7,6 +7,14 @@ export interface Card {
   id: string;
 }
 
+export interface HandAdviceInfo {
+  currentHandNameRu: string;
+  strength: 'WEAK' | 'MEDIUM' | 'STRONG';
+  phase: string;
+  draws: { name: string; outs: number; percentage: number }[];
+  advice: string;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -21,6 +29,7 @@ export interface Player {
   currentHandStrength?: 'WEAK' | 'MEDIUM' | 'STRONG';
   currentHandNameRu?: string;
   invested?: number;
+  hintInfo?: HandAdviceInfo;
 }
 
 export type GameState =

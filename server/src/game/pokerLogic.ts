@@ -93,7 +93,30 @@ function isStraight(values: number[]): { is: boolean; high: number } {
 export function evaluateHand(playerCards: Card[], communityCards: Card[]): HandRank {
   const all = [...playerCards, ...communityCards];
   const values = getValues(all);
-  if (all.length < 5) return { type: 'high', value: values[0] || 0, tiebreakers: values.slice(0, 5) };
+  if (all.length < 5) {
+    const counts = countByValue(all);
+    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0]);
+    const quads = entries.find(([, n]) => n === 4);
+    if (quads) {
+      return { type: 'quads', value: quads[0], kicker: 0, tiebreakers: [quads[0]] };
+    }
+    const trips = entries.find(([, n]) => n === 3);
+    if (trips) {
+      const kicker = entries.find(([v]) => v !== trips[0])?.[0] ?? 0;
+      return { type: 'trips', value: trips[0], kicker, tiebreakers: [trips[0], kicker] };
+    }
+    const twoPairs = entries.filter(([, n]) => n === 2);
+    if (twoPairs.length >= 2) {
+      const [high, low] = twoPairs.map(([v]) => v).sort((a, b) => b - a);
+      return { type: 'twopair', high, low, kicker: 0, tiebreakers: [high, low] };
+    }
+    const pairEntry = entries.find(([, n]) => n === 2);
+    if (pairEntry) {
+      const kicker = entries.find(([v]) => v !== pairEntry[0])?.[0] ?? 0;
+      return { type: 'pair', value: pairEntry[0], kicker, tiebreakers: [pairEntry[0], kicker] };
+    }
+    return { type: 'high', value: values[0] || 0, tiebreakers: values.slice(0, 5) };
+  }
 
   const bySuit = new Map<Suit, Card[]>();
   for (const c of all) {

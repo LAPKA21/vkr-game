@@ -55,8 +55,13 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
   const hasShowdownWinners = Array.isArray(room.winners) && room.winners.length > 0;
   const winnerHands = room.winnerHands ?? [];
 
-  const isLegendaryWin = ctx.state === 'ROUND_END' && hasShowdownWinners && 
-    winnerHands.some(w => w.handType === 'quads' || w.handType === 'straightflush');
+  const myPlayer = players[myIndex];
+  const hasLegendaryHand = myPlayer && (myPlayer.currentHandNameRu === 'каре' || myPlayer.currentHandNameRu === 'стрит-флеш');
+
+  const isLegendaryWin = ctx.state === 'ROUND_END' && (
+    (hasShowdownWinners && winnerHands.some(w => w.handType === 'quads' || w.handType === 'straightflush')) ||
+    (room.winners?.includes(myIndex) && hasLegendaryHand)
+  );
 
   const { innerWidth: width, innerHeight: height } = window;
 
@@ -107,7 +112,7 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
     const isMe = p.id === myId;
     const isDealer = ctx.dealerIndex === players.indexOf(p);
     const isCurrent = ctx.currentPlayerIndex === players.indexOf(p);
-    const isLegendaryWinner = isLegendaryWin && room.winners?.includes(index);
+    const isLegendaryWinner = isLegendaryWin && room.winners?.includes(players.indexOf(p));
 
     const SEAT_POSITIONS: React.CSSProperties[] = [
       { bottom: '110px', left: '35%', transform: 'translateX(-50%)' }, // 0: User Bottom Left-ish
@@ -180,16 +185,54 @@ export default function GameTable({ room, myId, onAction, onStart, onRestart }: 
 
         {isMe && p.cards.length >= 2 && p.currentHandNameRu && showHintsEnabled && (
           <div className={styles.hintContainer}>
-            {showHint && (
-              <div className={`${styles.hintText} ${styles[`strength-${p.currentHandStrength || 'WEAK'}`]}`}>
-                {p.currentHandNameRu}
+            {showHint && p.hintInfo && (
+              <div className={styles.hintPanel}>
+                <div className={styles.hintHeader}>
+                  <span className={styles.hintAssistantTitle}>🧙‍♂️ Ассистент стратегии</span>
+                  <span className={`${styles.hintStrengthBadge} ${styles[`strength-${p.hintInfo.strength}`]}`}>
+                    {p.hintInfo.strength === 'STRONG' ? '🔥 Сильная' : p.hintInfo.strength === 'MEDIUM' ? '⚡ Средняя' : '❄️ Слабая'}
+                  </span>
+                </div>
+                
+                <div className={styles.hintRow}>
+                  <span className={styles.hintLabel}>Текущая рука:</span>
+                  <span className={styles.hintValue}>{p.hintInfo.currentHandNameRu}</span>
+                </div>
+
+                {p.hintInfo.draws && p.hintInfo.draws.length > 0 && (
+                  <div className={styles.drawsSection}>
+                    <div className={styles.sectionLabel}>📈 Прогноз комбинаций (Ауты):</div>
+                    <div className={styles.drawsList}>
+                      {p.hintInfo.draws.map((draw, di) => (
+                        <div key={di} className={styles.drawItem}>
+                          <div className={styles.drawInfo}>
+                            <span className={styles.drawName}>{draw.name}</span>
+                            <span className={styles.drawOuts}>{draw.outs} {draw.outs === 1 ? 'аут' : draw.outs < 5 ? 'аута' : 'аутов'}</span>
+                          </div>
+                          <div className={styles.progressContainer}>
+                            <div 
+                              className={styles.progressBar} 
+                              style={{ width: `${Math.min(100, draw.percentage)}%` }}
+                            />
+                            <span className={styles.progressText}>{draw.percentage}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className={styles.adviceBox}>
+                  <div className={styles.adviceLabel}>💡 Рекомендация:</div>
+                  <p className={styles.adviceText}>{p.hintInfo.advice}</p>
+                </div>
               </div>
             )}
             <button
               className={styles.hintToggleBtn}
               onClick={() => setShowHint(!showHint)}
             >
-              {showHint ? 'Скрыть подсказку' : 'Подсказка'}
+              {showHint ? 'Скрыть помощника' : '🔮 Помощник по тактике'}
             </button>
           </div>
         )}

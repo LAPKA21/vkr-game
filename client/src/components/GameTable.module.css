@@ -334,26 +334,183 @@
   gap: 0.5rem;
   margin-top: 0.5rem;
   pointer-events: auto;
+  position: relative;
 }
 
-.hintText {
-  font-size: 0.9rem;
-  font-weight: bold;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
+.hintPanel {
+  position: absolute;
+  bottom: calc(100% + 15px);
+  left: 50%;
+  transform: translateX(-50%);
+  
+  background: rgba(10, 26, 14, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(201, 162, 39, 0.6);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  width: 320px;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(201, 162, 39, 0.1);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.strength-WEAK {
-  color: #fca5a5; /* light red */
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-.strength-MEDIUM {
-  color: #fde047; /* yellow */
+.hintHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.4rem;
 }
 
-.strength-STRONG {
-  color: #86efac; /* light green */
+.hintAssistantTitle {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.hintStrengthBadge {
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.hintStrengthBadge.strength-WEAK {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.hintStrengthBadge.strength-MEDIUM {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.hintStrengthBadge.strength-STRONG {
+  background: rgba(16, 185, 129, 0.2);
+  color: #86efac;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.hintRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.hintLabel {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hintValue {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.drawsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 0.4rem;
+}
+
+.sectionLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.drawsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.drawItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+}
+
+.drawInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.drawName {
+  color: #fff;
+  font-weight: 500;
+}
+
+.drawOuts {
+  color: #a7f3d0;
+  font-weight: 600;
+}
+
+.progressContainer {
+  position: relative;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.progressText {
+  position: absolute;
+  right: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.adviceBox {
+  background: rgba(201, 162, 39, 0.08);
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.adviceLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #c9a227;
+}
+
+.adviceText {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #e2e8f0;
+  margin: 0;
 }
 
 .hintToggleBtn {

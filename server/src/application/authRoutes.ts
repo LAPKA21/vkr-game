@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db.js';
 import { authMiddleware, AuthRequest } from './auth.middleware.js';
-import { sendVerificationEmail } from '../utils/mailer.js';
+import { sendVerificationEmail, sendStatsEmail } from '../utils/mailer.js';
 import { checkAndAwardStatsAchievements, checkAndAwardCombinationAchievements } from './achievementService.js';
 
 const router = Router();
@@ -195,6 +195,37 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Me endpoint error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Отправка отчета и статистики на почту
+router.post('/send-stats-email', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Необходима авторизация' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+
+    await sendStatsEmail(user.email, {
+      username: user.username,
+      chips: user.chips,
+      rating: user.rating,
+      totalGamesPlayed: user.totalGamesPlayed,
+      totalChipsWon: user.totalChipsWon,
+    });
+
+    res.json({ message: 'Статистика и рекомендации успешно отправлены на ваш email!' });
+  } catch (error) {
+    console.error('Send stats email error:', error);
+    res.status(500).json({ error: 'Ошибка сервера при отправке статистики на почту' });
   }
 });
 

@@ -84,7 +84,35 @@ const ProfilePage: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'combinations' | 'rounds' | 'ranks' | 'chips'>('all');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const handleSendEmail = async () => {
+    setSendingEmail(true);
+    setEmailStatus(null);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/auth/send-stats-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setEmailStatus('✅ Отчет успешно отправлен на вашу почту!');
+      } else {
+        setEmailStatus(`❌ Ошибка: ${data.error || 'Не удалось отправить письмо'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      setEmailStatus('❌ Сетевая ошибка при отправке отчета');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="auth-container"><h2 className="auth-title">Загрузка...</h2></div>;
@@ -198,6 +226,41 @@ const ProfilePage: React.FC = () => {
             <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontStyle: 'italic', fontSize: '0.9rem' }}>
               💡 Совет: {getRecommendation(user)}
             </p>
+            
+            <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '1.5rem' }}>
+              <button
+                className="btn-primary"
+                style={{
+                  background: 'linear-gradient(135deg, #c9a227 0%, #a8841f 100%)',
+                  color: '#0c1a12',
+                  boxShadow: '0 4px 15px rgba(201, 162, 39, 0.4)',
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                disabled={sendingEmail}
+                onClick={handleSendEmail}
+              >
+                {sendingEmail ? 'Отправка отчета...' : '📧 Отправить отчет и рекомендации на почту'}
+              </button>
+              {emailStatus && (
+                <div style={{ 
+                  marginTop: '0.5rem', 
+                  fontSize: '0.85rem', 
+                  color: emailStatus.includes('успешно') ? '#4ade80' : '#f87171',
+                  textAlign: 'center'
+                }}>
+                  {emailStatus}
+                </div>
+              )}
+            </div>
             
             {user.botMatches && user.botMatches.length > 0 ? (
               <div className="history-slider">

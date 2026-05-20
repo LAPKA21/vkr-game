@@ -11,7 +11,7 @@ import {
 } from '../game/gameStateMachine.js';
 import { getWinnerIndices, compareHandRanks, type HandRankType } from '../game/pokerLogic.js';
 import { trainingGameService } from '../application/trainingGameService.js';
-import { evaluateHandStrength } from '../domain/bot/handStrengthEvaluator.js';
+import { evaluateHandStrength, getDetailedHandAdvice } from '../domain/bot/handStrengthEvaluator.js';
 import { prisma } from '../db.js';
 import { checkAndAwardStatsAchievements, checkAndAwardCombinationAchievements } from '../application/achievementService.js';
 
@@ -581,11 +581,13 @@ export function serializeRoom(room: Room): Record<string, unknown> {
     players: room.players.map((p) => {
       let currentHandStrength;
       let currentHandNameRu;
+      let hintInfo;
 
       if (p.cards.length >= 2) {
         const rank = evaluateHand(p.cards, room.gameContext.communityCards);
         currentHandNameRu = getHandRankNameRu(rank.type);
         currentHandStrength = evaluateHandStrength(p.cards, room.gameContext.communityCards, room.gameContext.state);
+        hintInfo = getDetailedHandAdvice(p.cards, room.gameContext.communityCards, room.gameContext.state);
       }
 
       return {
@@ -601,6 +603,7 @@ export function serializeRoom(room: Room): Record<string, unknown> {
         lastAction: p.lastAction,
         currentHandStrength,
         currentHandNameRu,
+        hintInfo,
       };
     }),
     gameContext: {
