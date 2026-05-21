@@ -36,9 +36,17 @@ export default function Home() {
               <button
                 className={styles.primary}
                 onClick={() => navigate('/login')}
-                style={{ marginBottom: '1.5rem', transform: 'scale(1.1)' }}
+                style={{ marginBottom: '0.75rem', transform: 'scale(1.1)' }}
               >
                 Войти / Регистрация
+              </button>
+
+              <button
+                className={styles.secondary}
+                onClick={() => setIsVideoOpen(true)}
+                style={{ marginBottom: '1.5rem', borderColor: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+              >
+                📺 Видео-инструкция в помощь новичку
               </button>
 
               <button className={styles.secondary} disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>

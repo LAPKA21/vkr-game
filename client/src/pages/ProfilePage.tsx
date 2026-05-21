@@ -221,7 +221,7 @@ const ProfilePage: React.FC = () => {
         </div>
 
         <div className="auth-card" style={{ width: '100%', maxWidth: '500px', flex: '1 1 400px' }}>
-          <h2 className="auth-title">Рекомендации с ИИ</h2>
+          <h2 className="auth-title">Рекомендации игры с ботом</h2>
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontStyle: 'italic', fontSize: '0.9rem' }}>
               💡 Совет: {getRecommendation(user)}

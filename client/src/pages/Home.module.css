@@ -156,3 +156,77 @@
   background: rgba(220, 53, 69, 0.4);
   border-color: rgba(220, 53, 69, 0.6);
 }
+
+.helpBtn {
+  background: rgba(45, 138, 78, 0.2);
+  color: var(--accent-gold);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.helpBtn:hover:not(:disabled) {
+  background: rgba(45, 138, 78, 0.4);
+  border-color: var(--accent-gold);
+}
+
+.videoModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.videoContainer {
+  position: relative;
+  background: #1a1a2e;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  padding: 1.5rem;
+  padding-top: 2.5rem;
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.closeVideoBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0.2rem;
+  line-height: 1;
+}
+
+.closeVideoBtn:hover {
+  color: #c9a227;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
