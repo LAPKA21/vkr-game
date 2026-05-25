@@ -181,7 +181,7 @@ export default function GameRoom() {
         <button className={styles.back} onClick={handleExit}>
           ← Назад
         </button>
-        <h1 className={styles.title}>{room?.name ?? 'Игра'}</h1>
+        <h1 className={styles.title}>{room?.name ?? 'Покер'}</h1>
       </div>
       {room && (
         <GameTable
