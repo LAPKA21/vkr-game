@@ -8,7 +8,6 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -44,7 +43,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2 className="auth-title">Вход в Poker</h2>
+        <h2 className="auth-title">Вход в Игру</h2>
         
         {error && <div className="error-message">{error}</div>}
         
@@ -82,29 +81,7 @@ const LoginPage: React.FC = () => {
         <div className="auth-footer">
           Нет аккаунта? <Link to="/register">Создать аккаунт</Link>
         </div>
-
-        <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '1rem' }}>
-          <button 
-            type="button" 
-            className="btn-video-help" 
-            onClick={() => setIsVideoOpen(true)}
-          >
-            📺 Видео-инструкция в помощь новичку
-          </button>
-        </div>
       </div>
-
-      {isVideoOpen && (
-        <div className="video-modal-overlay" onClick={() => setIsVideoOpen(false)}>
-          <div className="video-modal-container" onClick={(e) => e.stopPropagation()}>
-            <button className="video-modal-close" onClick={() => setIsVideoOpen(false)}>✕</button>
-            <video controls width="100%" height="auto" style={{ borderRadius: '8px' }}>
-              <source src="/how-to-play-placeholder.mp4" type="video/mp4" />
-              Ваш браузер не поддерживает видео.
-            </video>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

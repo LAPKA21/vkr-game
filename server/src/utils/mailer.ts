@@ -4,7 +4,7 @@ const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
 const SMTP_USER = process.env.SMTP_USER || 'your-email@gmail.com';
 const SMTP_PASS = process.env.SMTP_PASS || 'your-app-password';
-const SMTP_FROM = process.env.SMTP_FROM || '"Poker FSM" <your-email@gmail.com>';
+const SMTP_FROM = process.env.SMTP_FROM || '"Game FSM" <your-email@gmail.com>';
 
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST,
@@ -28,10 +28,10 @@ export async function sendVerificationEmail(email: string, token: string) {
   const mailOptions = {
     from: SMTP_FROM,
     to: email,
-    subject: 'Подтверждение аккаунта Poker-FSM',
+    subject: 'Подтверждение аккаунта Game-FSM',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Добро пожаловать в Poker-FSM!</h2>
+        <h2>Добро пожаловать в Game-FSM!</h2>
         <p>Для завершения регистрации, пожалуйста, подтвердите ваш email.</p>
         <a href="${verificationLink}" style="display:inline-block; padding:10px 20px; background:#10b981; color:#fff; text-decoration:none; border-radius:5px;">
           Подтвердить Email
@@ -80,7 +80,7 @@ export async function sendStatsEmail(
     adviceBg = 'rgba(239, 68, 68, 0.08)';
     adviceBorder = 'rgba(239, 68, 68, 0.3)';
     adviceColor = '#fca5a5';
-    adviceText = `Мы заметили, что ваши последние результаты снизились. Покер — игра стратегического мышления и дисциплины. Рекомендуем подходить к процессу более вдумчиво:<br/><br/>
+    adviceText = `Мы заметили, что ваши последние результаты снизились. Наша игра — игра стратегического мышления и дисциплины. Рекомендуем подходить к процессу более вдумчиво:<br/><br/>
     🎯 <strong>Контролируйте эмоции (тильт):</strong> Не пытайтесь мгновенно отыграться после обидного проигрыша. Сделайте перерыв.<br/>
     📚 <strong>Сузьте диапазон рук:</strong> Не разыгрывайте «мусорные» карты на префлопе. Сбрасывайте слабые руки до флопа — это сбережет ваши фишки.<br/>
     🔮 <strong>Используйте Помощника:</strong> Наш новый Ассистент тактики прямо за игровым столом покажет точный расчет аутов и шансов улучшить комбинацию на флопе и терне. Пользуйтесь им активнее для принятия математически взвешенных решений!`;
@@ -89,25 +89,25 @@ export async function sendStatsEmail(
     adviceBg = 'rgba(16, 185, 129, 0.08)';
     adviceBorder = 'rgba(16, 185, 129, 0.3)';
     adviceColor = '#86efac';
-    adviceText = `Поздравляем! Вы демонстрируете выдающиеся результаты за покерным столом!<br/><br/>
+    adviceText = `Поздравляем! Вы демонстрируете выдающиеся результаты за игровым столом!<br/><br/>
     🌟 Вы отлично понимаете динамику игры, искусно управляете размером банка и принимаете математически верные решения. Вы настоящий молодец, продолжайте играть в таком же духе!<br/>
     🚀 Для дополнительного вызова рекомендуем сразиться с нашими продвинутыми ботами на максимальном уровне сложности в Тренировочной комнате, чтобы оттачивать мастерство блефа и чтения соперников. Новые высоты рейтинга ждут вас!`;
   } else {
     // Стабильный игрок
     adviceText = `Вы показываете стабильную и взвешенную игру. Это отличная основа для долгосрочного роста!<br/><br/>
-    📈 В покере стабильность ценится превыше всего. Продолжайте накапливать опыт, анализировать раздачи соперников и развивать чтение игрового поля. Помните: дисциплинированные фолды на поздних улицах экономят миллионы фишек на дистанции. Удачи в следующих раздачах!`;
+    📈 В нашей игре стабильность ценится превыше всего. Продолжайте накапливать опыт, анализировать раздачи соперников и развивать чтение игрового поля. Помните: дисциплинированные фолды на поздних улицах экономят миллионы фишек на дистанции. Удачи в следующих раздачах!`;
   }
 
   const mailOptions = {
     from: SMTP_FROM,
     to: email,
-    subject: '📊 Ваш покерный отчет и рекомендации - Poker-FSM',
+    subject: '📊 Ваш игровой отчет и рекомендации - Game-FSM',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0c1a12; color: #ffffff; padding: 30px 20px; border-radius: 16px; border: 2px solid #c9a227;">
         
         <div style="text-align: center; border-bottom: 2px solid rgba(201, 162, 39, 0.3); padding-bottom: 20px; margin-bottom: 25px;">
-          <h1 style="color: #c9a227; font-size: 24px; margin: 0; text-transform: uppercase; letter-spacing: 1.5px;">✨ Ваш покерный отчет ✨</h1>
-          <p style="color: #a7f3d0; font-size: 14px; margin: 5px 0 0 0;">Индивидуальная игровая статистика от Poker-FSM</p>
+          <h1 style="color: #c9a227; font-size: 24px; margin: 0; text-transform: uppercase; letter-spacing: 1.5px;">✨ Ваш игровой отчет ✨</h1>
+          <p style="color: #a7f3d0; font-size: 14px; margin: 5px 0 0 0;">Индивидуальная игровая статистика от Game-FSM</p>
         </div>
         
         <p style="font-size: 16px; line-height: 1.6; color: #e2e8f0; margin-bottom: 20px;">
@@ -148,7 +148,7 @@ export async function sendStatsEmail(
         <div style="text-align: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
           <p style="color: #a0aec0; font-size: 12px; margin-bottom: 15px;">Хотите улучшить показатели или проверить новые стратегии?</p>
           <a href="${clientUrl}" style="display: inline-block; padding: 12px 25px; background: linear-gradient(180deg, #c9a227 0%, #a8841f 100%); color: #0c1a12; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);">
-            🚀 Играть в Poker-FSM
+            🚀 Играть в Game-FSM
           </a>
         </div>
         

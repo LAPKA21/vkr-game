@@ -9,7 +9,6 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -96,29 +95,7 @@ const RegisterPage: React.FC = () => {
         <div className="auth-footer">
           Уже есть аккаунт? <Link to="/login">Войти</Link>
         </div>
-
-        <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '1rem' }}>
-          <button 
-            type="button" 
-            className="btn-video-help" 
-            onClick={() => setIsVideoOpen(true)}
-          >
-            📺 Видео-инструкция в помощь новичку
-          </button>
-        </div>
       </div>
-
-      {isVideoOpen && (
-        <div className="video-modal-overlay" onClick={() => setIsVideoOpen(false)}>
-          <div className="video-modal-container" onClick={(e) => e.stopPropagation()}>
-            <button className="video-modal-close" onClick={() => setIsVideoOpen(false)}>✕</button>
-            <video controls width="100%" height="auto" style={{ borderRadius: '8px' }}>
-              <source src="/how-to-play-placeholder.mp4" type="video/mp4" />
-              Ваш браузер не поддерживает видео.
-            </video>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
