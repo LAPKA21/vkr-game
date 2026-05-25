@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2 className="auth-title">Вход в Игру</h2>
+        <h2 className="auth-title">Вход в Poker</h2>
         
         {error && <div className="error-message">{error}</div>}
         
