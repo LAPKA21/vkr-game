@@ -8,7 +8,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [botDifficulty, setBotDifficulty] = useState('NORMAL');
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const location = useLocation();
   const postGameStats = location.state?.postGameStats as PostGameStats | undefined;
 
@@ -43,7 +43,7 @@ export default function Home() {
 
               <button
                 className={styles.secondary}
-                onClick={() => setIsVideoOpen(true)}
+                onClick={() => setActiveVideo('/novice-guide.mp4')}
                 style={{ marginBottom: '1.5rem', borderColor: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               >
                 📺 Видео-инструкция в помощь новичку
@@ -113,7 +113,7 @@ export default function Home() {
                   </button>
                   <button 
                     className={styles.helpBtn}
-                    onClick={() => setIsVideoOpen(true)}
+                    onClick={() => setActiveVideo('/gameplay-actions.mp4')}
                     title="Как играть?"
                   >
                     ?
@@ -137,12 +137,12 @@ export default function Home() {
       )}
       <div className={styles.decor} aria-hidden />
 
-      {isVideoOpen && (
-        <div className={styles.videoModal} onClick={() => setIsVideoOpen(false)}>
+      {activeVideo && (
+        <div className={styles.videoModal} onClick={() => setActiveVideo(null)}>
           <div className={styles.videoContainer} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeVideoBtn} onClick={() => setIsVideoOpen(false)}>✕</button>
-            <video controls width="100%" height="auto" style={{ borderRadius: '8px' }}>
-              <source src="/how-to-play-placeholder.mp4" type="video/mp4" />
+            <button className={styles.closeVideoBtn} onClick={() => setActiveVideo(null)}>✕</button>
+            <video key={activeVideo} controls width="100%" height="auto" style={{ borderRadius: '8px' }} autoPlay>
+              <source src={activeVideo} type="video/mp4" />
               Ваш браузер не поддерживает видео.
             </video>
           </div>
