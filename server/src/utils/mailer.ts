@@ -101,12 +101,12 @@ export async function sendStatsEmail(
   const mailOptions = {
     from: SMTP_FROM,
     to: email,
-    subject: '📊 Ваш покерный отчет и рекомендации - Poker-FSM',
+    subject: '📊 Ваш игровой отчет и рекомендации - Poker-FSM',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0c1a12; color: #ffffff; padding: 30px 20px; border-radius: 16px; border: 2px solid #c9a227;">
         
         <div style="text-align: center; border-bottom: 2px solid rgba(201, 162, 39, 0.3); padding-bottom: 20px; margin-bottom: 25px;">
-          <h1 style="color: #c9a227; font-size: 24px; margin: 0; text-transform: uppercase; letter-spacing: 1.5px;">✨ Ваш покерный отчет ✨</h1>
+          <h1 style="color: #c9a227; font-size: 24px; margin: 0; text-transform: uppercase; letter-spacing: 1.5px;">✨ Ваш игровой отчет ✨</h1>
           <p style="color: #a7f3d0; font-size: 14px; margin: 5px 0 0 0;">Индивидуальная игровая статистика от Poker-FSM</p>
         </div>
         
