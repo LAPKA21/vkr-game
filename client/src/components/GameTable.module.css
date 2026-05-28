@@ -1,11 +1,10 @@
 .table {
   position: relative;
-  width: 95%; /* Make it wider */
-  max-width: 1600px; /* Expand maximum allowance */
-  height: calc(100vh - 4rem);
-  min-height: 600px;
-  max-height: 900px; /* Taller on big screens */
-  margin: 2rem auto;
+  width: 95%;
+  max-width: 1600px;
+  flex: 1;
+  min-height: 450px;
+  margin: 0.5rem auto 0 auto;
   padding: 1.5rem;
 
   background: linear-gradient(160deg, #0a4d2e 0%, #063d24 100%);
