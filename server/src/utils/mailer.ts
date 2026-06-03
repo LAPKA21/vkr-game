@@ -17,12 +17,24 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
+ * Получает URL клиента, заменяя http на https в продакшене и удаляя порт 80
+ */
+function getClientUrl(): string {
+  let clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  if (clientUrl.startsWith('http://') && !clientUrl.includes('localhost') && !clientUrl.includes('127.0.0.1')) {
+    clientUrl = clientUrl.replace('http://', 'https://');
+    clientUrl = clientUrl.replace(/:80(\/|$)/, '$1');
+  }
+  return clientUrl;
+}
+
+/**
  * Отправляет письмо с ссылкой для подтверждения.
  * В режиме разработки (без пароля) выведет в консоль.
  */
 export async function sendVerificationEmail(email: string, token: string) {
   // Заменяем localhost на реальный домен при деплое
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = getClientUrl();
   const verificationLink = `${clientUrl}/verify-email?token=${token}`;
 
   const mailOptions = {
@@ -67,7 +79,7 @@ export async function sendStatsEmail(
   }
 ) {
   const { username, chips, rating, totalGamesPlayed, totalChipsWon } = stats;
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = getClientUrl();
 
   // Определение рекомендаций на основе показателей игрока
   let adviceBg = 'rgba(201, 162, 39, 0.08)';
