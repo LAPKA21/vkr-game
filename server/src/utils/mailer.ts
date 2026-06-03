@@ -21,9 +21,12 @@ const transporter = nodemailer.createTransport({
  */
 function getClientUrl(): string {
   let clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-  if (clientUrl.startsWith('http://') && !clientUrl.includes('localhost') && !clientUrl.includes('127.0.0.1')) {
-    clientUrl = clientUrl.replace('http://', 'https://');
-    clientUrl = clientUrl.replace(/:80(\/|$)/, '$1');
+  const isLocal = clientUrl.includes('localhost') || clientUrl.includes('127.0.0.1');
+  if (!isLocal) {
+    // Если ссылка начинается с http:// или содержит сырой IP-адрес, принудительно заменяем на домен с https
+    if (clientUrl.startsWith('http://') || /^(https?:\/\/)?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(clientUrl)) {
+      return 'https://vkr-game.ru';
+    }
   }
   return clientUrl;
 }
