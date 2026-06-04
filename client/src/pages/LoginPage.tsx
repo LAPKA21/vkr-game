@@ -80,6 +80,9 @@ const LoginPage: React.FC = () => {
 
         <div className="auth-footer">
           Нет аккаунта? <Link to="/register">Создать аккаунт</Link>
+          <div style={{ marginTop: '10px' }}>
+            <Link to="/forgot-password">Забыли пароль?</Link>
+          </div>
         </div>
       </div>
     </div>

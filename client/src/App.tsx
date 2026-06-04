@@ -8,6 +8,8 @@ import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ProfilePage from './pages/ProfilePage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, isLoading } = useAuth();
@@ -23,6 +25,8 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/servers" element={<ProtectedRoute><ServerBrowser /></ProtectedRoute>} />
       <Route path="/room/:roomId" element={<ProtectedRoute><GameRoom /></ProtectedRoute>} />

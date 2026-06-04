@@ -185,3 +185,54 @@ export async function sendStatsEmail(
     throw new Error('Failed to send stats email');
   }
 }
+
+export async function sendResetPasswordEmail(email: string, token: string) {
+  const clientUrl = getClientUrl();
+  const resetLink = `${clientUrl}/reset-password?token=${token}`;
+
+  const mailOptions = {
+    from: SMTP_FROM,
+    to: email,
+    subject: 'Сброс пароля Poker-FSM',
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0c1a12; color: #ffffff; padding: 30px 20px; border-radius: 16px; border: 2px solid #c9a227;">
+        <div style="text-align: center; border-bottom: 2px solid rgba(201, 162, 39, 0.3); padding-bottom: 20px; margin-bottom: 25px;">
+          <h1 style="color: #c9a227; font-size: 24px; margin: 0; text-transform: uppercase; letter-spacing: 1.5px;">🔑 Восстановление пароля 🔑</h1>
+        </div>
+        <p style="font-size: 16px; line-height: 1.6; color: #e2e8f0; margin-bottom: 20px;">
+          Вы получили это письмо, потому что запросили сброс пароля для вашего аккаунта в <strong>Poker-FSM</strong>.
+        </p>
+        <p style="font-size: 16px; line-height: 1.6; color: #e2e8f0; margin-bottom: 25px;">
+          Для завершения сброса пароля, пожалуйста, нажмите на кнопку ниже (ссылка действительна в течение 1 часа):
+        </p>
+        <div style="text-align: center; margin-bottom: 25px;">
+          <a href="${resetLink}" style="display: inline-block; padding: 12px 25px; background: linear-gradient(180deg, #c9a227 0%, #a8841f 100%); color: #0c1a12; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);">
+            Сбросить пароль
+          </a>
+        </div>
+        <p style="color: #a0aec0; font-size: 12px; line-height: 1.5;">
+          Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо, ваш пароль останется в безопасности.
+        </p>
+        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; color: #a0aec0; font-size: 11px;">
+          Если кнопка выше не работает, скопируйте и вставьте эту ссылку в адресную строку браузера:<br/>
+          <span style="color: #c9a227;">${resetLink}</span>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    if (SMTP_PASS === 'your-app-password') {
+      console.warn('[MAILER] SMTP пароль не настроен! Имитация отправки сброса пароля.');
+      console.warn(`[MAILER] Ссылка для сброса: ${email} -> ${resetLink}`);
+      return;
+    }
+
+    await transporter.sendMail(mailOptions);
+    console.log(`[MAILER] Письмо для сброса пароля отправлено на ${email}`);
+  } catch (error) {
+    console.error(`[MAILER] Ошибка отправки письма для сброса на ${email}`, error);
+    throw new Error('Failed to send reset password email');
+  }
+}
+

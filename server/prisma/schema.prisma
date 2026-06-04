@@ -19,6 +19,8 @@ model User {
   passwordHash       String
   isEmailVerified    Boolean  @default(false)
   verificationToken  String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
   chips              Int      @default(1000)
   rating             Int      @default(1000)
   totalGamesPlayed   Int      @default(0)

@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db.js';
 import { authMiddleware, AuthRequest } from './auth.middleware.js';
-import { sendVerificationEmail, sendStatsEmail } from '../utils/mailer.js';
+import { sendVerificationEmail, sendStatsEmail, sendResetPasswordEmail } from '../utils/mailer.js';
 import { checkAndAwardStatsAchievements, checkAndAwardCombinationAchievements } from './achievementService.js';
 
 const router = Router();
@@ -92,6 +92,95 @@ router.post('/verify-email', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Verify email error:', error);
     res.status(500).json({ error: 'Ошибка сервера при подтверждении' });
+  }
+});
+
+// Запрос сброса пароля (Forgot Password)
+router.post('/forgot-password', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email обязателен для заполнения' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Пользователь с таким email не найден' });
+    }
+
+    // Генерация токена сброса (JWT на 1 час)
+    const resetToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: '1h' });
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 час от текущего момента
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: expiresAt,
+      }
+    });
+
+    await sendResetPasswordEmail(email, resetToken);
+
+    res.json({ message: 'Ссылка для сброса пароля успешно отправлена на вашу почту.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера при запросе сброса пароля' });
+  }
+});
+
+// Сброс пароля (Reset Password)
+router.post('/reset-password', async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Токен и новый пароль обязательны' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Пароль должен быть не менее 6 символов' });
+    }
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (e) {
+      return res.status(400).json({ error: 'Неверный или просроченный токен' });
+    }
+
+    const email = decoded.email;
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          gt: new Date() // Проверяем, что срок действия не истек
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Неверный токен сброса или срок его действия истек' });
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: newPasswordHash,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      }
+    });
+
+    res.json({ message: 'Пароль успешно изменен' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера при смене пароля' });
   }
 });
 
